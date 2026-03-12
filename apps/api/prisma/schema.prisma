@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PLAYER
+  ADMIN
+}
+
+enum NoticeCategory {
+  UPDATE
+  MAINTENANCE
+  EVENT
+}
+
+enum ValidationStatus {
+  PENDING
+  ACCEPTED
+  SUSPICIOUS
+  REJECTED
+}
+
+enum CurrencyType {
+  KRW
+  GEM
+}
+
+model User {
+  id          String           @id @default(cuid())
+  email       String           @unique
+  nickname    String
+  role        UserRole         @default(PLAYER)
+  currencies  UserCurrency?
+  rankings    RankingEntry[]
+  orders      Order[]
+  progress    PlayerProgress?
+  runs        GameRun[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model UserCurrency {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  gold      Int      @default(0)
+  gem       Int      @default(0)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt DateTime @updatedAt
+}
+
+model Notice {
+  id          String         @id @default(cuid())
+  title       String
+  summary     String
+  body        String
+  category    NoticeCategory
+  isPublished Boolean        @default(true)
+  publishedAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Season {
+  id         String         @id @default(cuid())
+  name       String
+  isActive   Boolean        @default(false)
+  startedAt  DateTime
+  endedAt    DateTime
+  rankings   RankingEntry[]
+  createdAt  DateTime       @default(now())
+}
+
+model RankingEntry {
+  id         String   @id @default(cuid())
+  seasonId   String?
+  season     Season?  @relation(fields: [seasonId], references: [id], onDelete: SetNull)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score      Int
+  bestWave   Int
+  cleared    Boolean
+  createdAt  DateTime @default(now())
+}
+
+model Product {
+  id           String       @id @default(cuid())
+  code         String       @unique
+  name         String
+  description  String
+  badge        String?
+  price        Int
+  currencyType CurrencyType
+  isActive     Boolean      @default(true)
+  orders       Order[]
+  createdAt    DateTime     @default(now())
+}
+
+model Order {
+  id              String    @id @default(cuid())
+  userId          String
+  productId       String
+  paymentProvider String
+  amount          Int
+  status          String
+  requestedAt     DateTime  @default(now())
+  approvedAt      DateTime?
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product         Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+}
+
+model GameRun {
+  id               String           @id @default(cuid())
+  userId           String
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stageId          String
+  score            Int
+  bestWave         Int
+  cleared          Boolean
+  durationMs       Int
+  validationStatus ValidationStatus @default(PENDING)
+  suspicious       Boolean          @default(false)
+  startedAt        DateTime
+  finishedAt       DateTime
+  createdAt        DateTime         @default(now())
+}
+
+model PlayerProgress {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  currentStage Int      @default(1)
+  stars        Int      @default(0)
+  lastPlayedAt DateTime?
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
