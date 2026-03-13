@@ -17,7 +17,7 @@ export const RankingPage = () => {
           <h1>전장 랭킹</h1>
         </div>
         <p className="page-header__copy">
-          출격 종료 후 제출된 기록이 실시간 순위표에 반영됩니다.
+          출격 종료 후 제출된 기록은 실시간 순위표에 반영됩니다.
         </p>
       </div>
       <div className="table-card">

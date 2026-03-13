@@ -1,8 +1,8 @@
-import type { EnemyKind, TowerKind } from "./core/types/gameTypes";
+import type { EnemyKind, StageId, TowerKind } from "./core/types/gameTypes";
 import { gameModeCatalog } from "./data/gameModes";
 import { stageCatalog } from "./data/stages/stageDefinitions";
 import { towerDefinitions } from "./data/towers/towerDefinitions";
-import { waveDefinitions } from "./data/waves/waveDefinitions";
+import { getWaveDefinitions } from "./data/waves/waveDefinitions";
 
 export interface TowerCatalogEntry {
   key: TowerKind;
@@ -13,9 +13,9 @@ export interface TowerCatalogEntry {
 }
 
 const towerDescriptions: Record<TowerKind, string> = {
-  arrow: "빠른 연사와 높은 사거리로 초반부터 안정적인 화력을 제공합니다.",
-  cannon: "강한 폭발 피해로 중장갑과 보스 처리에 강한 포격 특화 타워입니다.",
-  frost: "피해와 둔화를 동시에 걸어 후반 웨이브 흐름을 끊어내는 제어형 타워입니다."
+  arrow: "빠른 연사와 긴 사거리로 초반 라인을 안정적으로 묶어 주는 기본 포대입니다.",
+  cannon: "강한 범위 화력으로 중장갑과 보스를 정리하는 핵심 중화기 포대입니다.",
+  frost: "둔화와 범위 제어를 동시에 걸어 전장 흐름을 제어하는 지원형 포대입니다."
 };
 
 const towerHotkeys: Record<TowerKind, string> = {
@@ -41,15 +41,15 @@ export const towerCatalog: TowerCatalogEntry[] = (Object.keys(towerDefinitions) 
   })
 );
 
-export const getWaveSummary = (waveNumber: number): string => {
-  const wave = waveDefinitions.find((entry) => entry.index === waveNumber);
+export const getWaveSummary = (waveNumber: number, stageId: StageId = "han-river-front"): string => {
+  const wave = getWaveDefinitions(stageId).find((entry) => entry.index === waveNumber);
   if (!wave) {
     return "모든 웨이브 완료";
   }
 
   return wave.groups
     .map((group) => `${enemyDisplayNames[group.enemyType]} ${group.count}기`)
-    .join(" · ");
+    .join(" / ");
 };
 
 export { gameModeCatalog, stageCatalog };

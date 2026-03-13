@@ -87,6 +87,50 @@ export interface StagePropDefinition {
   depth?: number;
 }
 
+export interface StageVisualOverrides {
+  backgroundColor?: string;
+  grassTint?: number;
+  grassAltTint?: number;
+  roadTint?: number;
+  patchTint?: number;
+  slotAvailableTint?: number;
+  slotOccupiedTint?: number;
+  slotSelectedTint?: number;
+  slotGlowTint?: number;
+  towerPlateOuter?: number;
+  towerPlateInner?: number;
+  towerSelectedTint?: number;
+  hitTint?: number;
+  explosionTint?: number;
+  freezeTint?: number;
+  startTint?: number;
+  endTint?: number;
+  propTint?: number;
+  overdriveTint?: number;
+}
+
+export interface StageAtmosphereDefinition {
+  glowTint: number;
+  glowTintAlt: number;
+  glowAlpha: number;
+  hazeTint: number;
+  hazeAlpha: number;
+  pathGuideTint: number;
+  pathGuideAlpha: number;
+  panelTint: number;
+  panelStrokeTint: number;
+}
+
+export interface StagePresentationDefinition {
+  tagline: string;
+  sector: string;
+  threatLevel: string;
+  weather: string;
+  recommendedTower: TowerKind;
+  recommendedTowerLabel: string;
+  tacticalNote: string;
+}
+
 export interface StageDefinition {
   id: StageId;
   name: string;
@@ -99,6 +143,9 @@ export interface StageDefinition {
   buildSlots: BuildSlotDefinition[];
   zones?: StageDecorationZone[];
   props?: StagePropDefinition[];
+  visuals?: StageVisualOverrides;
+  atmosphere: StageAtmosphereDefinition;
+  presentation: StagePresentationDefinition;
 }
 
 export interface GameStateSnapshot {

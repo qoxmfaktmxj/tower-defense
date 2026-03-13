@@ -10,6 +10,7 @@
     "dev:api": "corepack pnpm --filter @tower-defense/api dev",
     "build": "corepack pnpm --filter @tower-defense/shared build && corepack pnpm --filter @tower-defense/game build && corepack pnpm --filter @tower-defense/api build && corepack pnpm --filter @tower-defense/web build",
     "typecheck": "corepack pnpm -r typecheck",
+    "test": "node --import tsx --test tests/index.test.ts",
     "lint": "corepack pnpm run typecheck",
     "format": "prettier --write ."
   },

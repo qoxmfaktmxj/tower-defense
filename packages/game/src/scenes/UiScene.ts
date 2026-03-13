@@ -2,6 +2,8 @@ import Phaser from "phaser";
 import { GAME_EVENTS, type GameEventMap } from "../bridge/gameEvents";
 import { SCENE_KEYS } from "../core/constants/sceneKeys";
 
+const FONT_FAMILY = '"Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+
 export class UiScene extends Phaser.Scene {
   private hudText?: Phaser.GameObjects.Text;
   private helperText?: Phaser.GameObjects.Text;
@@ -14,34 +16,51 @@ export class UiScene extends Phaser.Scene {
   create() {
     const bus = this.game.registry.get("bridgeBus") as Phaser.Events.EventEmitter;
 
+    this.add
+      .rectangle(18, 18, 360, 34, 0xf8fffc, 0.84)
+      .setOrigin(0, 0)
+      .setStrokeStyle(1, 0x938ba1, 0.42)
+      .setDepth(29);
     this.hudText = this.add
-      .text(20, 18, "", {
-        fontFamily: "Kenney Future Narrow, Pretendard, sans-serif",
-        fontSize: "18px",
-        color: "#f6fbfc"
+      .text(30, 27, "", {
+        fontFamily: FONT_FAMILY,
+        fontSize: "15px",
+        color: "#324349"
       })
       .setDepth(30);
 
-    this.helperText = this.add
-      .text(20, 500, "슬롯을 클릭한 뒤 Q / W / E 또는 우측 패널로 타워를 배치하세요.", {
-        fontFamily: "Pretendard, Noto Sans KR, sans-serif",
-        fontSize: "14px",
-        color: "#9ed8df"
-      })
-      .setDepth(30);
-
+    this.add
+      .rectangle(714, 18, 228, 54, 0xf8fffc, 0.84)
+      .setOrigin(0, 0)
+      .setStrokeStyle(1, 0x938ba1, 0.42)
+      .setDepth(29);
     this.selectionText = this.add
-      .text(650, 18, "선택 없음", {
-        fontFamily: "Kenney Future Narrow, Pretendard, sans-serif",
-        fontSize: "18px",
-        color: "#f6fbfc",
+      .text(930, 28, "선택 없음", {
+        fontFamily: FONT_FAMILY,
+        fontSize: "16px",
+        fontStyle: "700",
+        color: "#324349",
         align: "right"
+      })
+      .setOrigin(1, 0)
+      .setDepth(30);
+
+    this.add
+      .rectangle(18, 490, 360, 32, 0xf8fffc, 0.84)
+      .setOrigin(0, 0)
+      .setStrokeStyle(1, 0x938ba1, 0.36)
+      .setDepth(29);
+    this.helperText = this.add
+      .text(30, 498, "슬롯을 선택한 뒤 화면 안 버튼으로 포대를 배치하세요.", {
+        fontFamily: FONT_FAMILY,
+        fontSize: "14px",
+        color: "#5b6f77"
       })
       .setDepth(30);
 
     const handleState = (snapshot: GameEventMap["onStateChanged"]) => {
       this.hudText?.setText(
-        `${snapshot.modeName} · ${snapshot.stageName}   골드 ${snapshot.gold}   생명 ${snapshot.lives}   웨이브 ${snapshot.currentWave}/${snapshot.totalWaves}   점수 ${snapshot.score}   속도 x${snapshot.speed}${snapshot.paused ? "   일시정지" : ""}`
+        `골드 ${snapshot.gold} | 생명 ${snapshot.lives} | 웨이브 ${snapshot.currentWave}/${snapshot.totalWaves} | 속도 x${snapshot.speed}${snapshot.paused ? " | 일시 정지" : ""}`
       );
     };
 

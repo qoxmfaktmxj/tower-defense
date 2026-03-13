@@ -8,6 +8,8 @@ import {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim() || "";
 const LOCAL_RANKING_KEY = "tower-defense-local-rankings";
+const MAX_REASONABLE_SCORE_PER_WAVE = 9_000;
+const BASE_SCORE_ALLOWANCE = 15_000;
 
 interface SubmitGameResultResponse {
   accepted: boolean;
@@ -110,7 +112,8 @@ export const submitGameResult = async (
     () => {
       const suspicious =
         (payload.result.cleared && payload.result.durationMs < 45_000) ||
-        payload.result.score > payload.result.bestWave * 2500 + 5000;
+        payload.result.score >
+          payload.result.bestWave * MAX_REASONABLE_SCORE_PER_WAVE + BASE_SCORE_ALLOWANCE;
 
       const localRankings = parseLocalRankings();
       if (!suspicious) {

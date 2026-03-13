@@ -11,6 +11,8 @@ import { EconomyManager } from "./EconomyManager";
 import { EnemyManager } from "./EnemyManager";
 import { ProjectileManager } from "./ProjectileManager";
 
+type FireCallback = (towerType: TowerKind, specialEffect: boolean) => void;
+
 export class TowerManager {
   private readonly slots = new Map<string, BuildSlot>();
   private readonly towers = new Map<string, Tower>();
@@ -23,7 +25,8 @@ export class TowerManager {
     private readonly theme: GameModeThemeDefinition,
     private readonly enemyManager: EnemyManager,
     private readonly projectileManager: ProjectileManager,
-    onSelect: (slotId: string) => void
+    onSelect: (slotId: string) => void,
+    private readonly onFire?: FireCallback
   ) {
     this.onSelect = onSelect;
     stage.buildSlots.forEach((slot) => {
@@ -38,7 +41,7 @@ export class TowerManager {
       return "선택한 슬롯을 찾을 수 없습니다.";
     }
     if (this.towers.has(slotId)) {
-      return "이미 타워가 배치된 슬롯입니다.";
+      return "이미 포대가 배치된 슬롯입니다.";
     }
     if (!economy.spend(definition.buildCost)) {
       return "골드가 부족합니다.";
@@ -51,7 +54,8 @@ export class TowerManager {
       slot.y,
       definition,
       this.theme,
-      this.onSelect
+      this.onSelect,
+      this.onFire
     );
     this.towers.set(slotId, tower);
     slot.setOccupied(true);
@@ -61,7 +65,7 @@ export class TowerManager {
   upgradeTower(slotId: string, economy: EconomyManager) {
     const tower = this.towers.get(slotId);
     if (!tower) {
-      return "업그레이드할 타워가 없습니다.";
+      return "업그레이드할 포대가 없습니다.";
     }
 
     const upgradeCost = tower.getUpgradeCost();
@@ -80,7 +84,7 @@ export class TowerManager {
     const tower = this.towers.get(slotId);
     const slot = this.slots.get(slotId);
     if (!tower || !slot) {
-      return "판매할 타워가 없습니다.";
+      return "판매할 포대가 없습니다.";
     }
 
     economy.addGold(tower.getSellValue());

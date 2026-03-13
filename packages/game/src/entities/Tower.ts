@@ -44,6 +44,7 @@ export class Tower {
   private readonly theme: GameModeThemeDefinition;
   private readonly x: number;
   private readonly y: number;
+  private readonly onFire?: (towerType: TowerKind, specialEffect: boolean) => void;
   private cooldownMs = 0;
   private levelIndex = 0;
   private totalSpent: number;
@@ -55,7 +56,8 @@ export class Tower {
     y: number,
     definition: TowerDefinition,
     theme: GameModeThemeDefinition,
-    onSelect: (slotId: string) => void
+    onSelect: (slotId: string) => void,
+    onFire?: (towerType: TowerKind, specialEffect: boolean) => void
   ) {
     this.slotId = slotId;
     this.type = definition.key;
@@ -64,6 +66,7 @@ export class Tower {
     this.theme = theme;
     this.x = x;
     this.y = y;
+    this.onFire = onFire;
     this.totalSpent = definition.buildCost;
 
     this.shadow = scene.add
@@ -154,6 +157,7 @@ export class Tower {
     this.aura.setAlpha(this.currentLevel.specialEffect ? 0.28 : 0.22);
     this.aura.setScale(0.85);
     this.body.setScale(0.96);
+    this.onFire?.(this.type, Boolean(this.currentLevel.specialEffect));
 
     if (this.currentLevel.specialEffect) {
       this.playOverdrivePulse();
@@ -258,25 +262,20 @@ export class Tower {
     this.overdriveRing.setStrokeStyle(
       isOverdrive ? 2 : 0,
       this.theme.visuals.overdriveTint,
-      isOverdrive ? (selected ? 0.48 : 0.22) : 0
+      isOverdrive ? 0.48 : 0
     );
-    this.overdriveRing.setAlpha(isOverdrive ? (selected ? 0.9 : 0.45) : 0);
   }
 
-  private playOverdrivePulse(isUpgrade = false) {
+  private playOverdrivePulse(fromUpgrade = false) {
     this.overdriveRing.setVisible(true);
-    this.overdriveRing.setAlpha(isUpgrade ? 0.95 : 0.75);
-    this.overdriveRing.setScale(isUpgrade ? 0.8 : 1);
-    this.body.scene.tweens.add({
+    this.overdriveRing.setScale(0.92);
+    this.overdriveRing.setAlpha(fromUpgrade ? 0.86 : 0.62);
+    this.overdriveRing.scene.tweens.add({
       targets: this.overdriveRing,
-      alpha: 0.16,
-      scaleX: isUpgrade ? 1.6 : 1.34,
-      scaleY: isUpgrade ? 1.6 : 1.34,
-      duration: isUpgrade ? 420 : 220,
-      onComplete: () => {
-        this.overdriveRing.setScale(1);
-        this.overdriveRing.setAlpha(0.45);
-      }
+      alpha: 0,
+      scaleX: fromUpgrade ? 2.4 : 1.8,
+      scaleY: fromUpgrade ? 2.4 : 1.8,
+      duration: fromUpgrade ? 540 : 320
     });
   }
 

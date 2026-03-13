@@ -12,7 +12,7 @@ export const ProfilePage = () => {
   });
 
   if (!sessionQuery.data) {
-    return <div className="stack-card">프로필 정보를 준비 중입니다.</div>;
+    return <div className="stack-card">프로필 정보를 준비하는 중입니다.</div>;
   }
 
   const session = sessionQuery.data;

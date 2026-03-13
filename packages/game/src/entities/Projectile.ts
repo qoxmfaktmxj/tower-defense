@@ -4,12 +4,15 @@ import type { GameModeThemeDefinition } from "../data/gameModes";
 import { Enemy } from "./Enemy";
 import { EnemyManager } from "../managers/EnemyManager";
 
+type ImpactCallback = (kind: ProjectileConfig["effectKind"], specialEffect: boolean) => void;
+
 export class Projectile {
   private readonly scene: Phaser.Scene;
   private readonly sprite: Phaser.GameObjects.Image;
   private readonly config: ProjectileConfig;
   private readonly target: Enemy;
   private readonly theme: GameModeThemeDefinition;
+  private readonly onImpact?: ImpactCallback;
   private x: number;
   private y: number;
 
@@ -19,7 +22,8 @@ export class Projectile {
     y: number,
     target: Enemy,
     config: ProjectileConfig,
-    theme: GameModeThemeDefinition
+    theme: GameModeThemeDefinition,
+    onImpact?: ImpactCallback
   ) {
     this.scene = scene;
     this.x = x;
@@ -27,6 +31,7 @@ export class Projectile {
     this.target = target;
     this.config = config;
     this.theme = theme;
+    this.onImpact = onImpact;
     this.sprite = this.createProjectile(scene, x, y, config);
   }
 
@@ -103,6 +108,7 @@ export class Projectile {
     }
 
     this.playImpactEffect(targetPosition.x, targetPosition.y);
+    this.onImpact?.(this.config.effectKind, Boolean(this.config.specialEffect));
     this.destroy();
     return true;
   }

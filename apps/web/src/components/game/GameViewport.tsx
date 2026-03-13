@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { type ReactNode, type RefObject, useEffect, useRef } from "react";
 import {
   createGameBridge,
   type GameBridge,
@@ -17,6 +17,8 @@ interface GameViewportProps {
   onSelectionChange: (selection: GameSelection | null) => void;
   onStateChange: (snapshot: GameStateSnapshot) => void;
   onError: (message: string) => void;
+  children?: ReactNode;
+  viewportRef?: RefObject<HTMLDivElement>;
 }
 
 export const GameViewport = ({
@@ -26,7 +28,9 @@ export const GameViewport = ({
   onRunFinished,
   onSelectionChange,
   onStateChange,
-  onError
+  onError,
+  children,
+  viewportRef
 }: GameViewportProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const onBridgeReadyRef = useRef(onBridgeReady);
@@ -77,5 +81,10 @@ export const GameViewport = ({
     };
   }, [gameMode, stageId]);
 
-  return <div className="game-viewport" ref={containerRef} />;
+  return (
+    <div className="game-viewport" ref={viewportRef}>
+      <div className="game-viewport__canvas" ref={containerRef} />
+      {children ? <div className="game-viewport__overlay">{children}</div> : null}
+    </div>
+  );
 };

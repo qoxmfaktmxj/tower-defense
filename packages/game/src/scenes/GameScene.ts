@@ -1,6 +1,8 @@
 import Phaser from "phaser";
+import { GameAudioController } from "../audio/GameAudioController";
 import { GAME_COMMANDS } from "../bridge/gameCommands";
 import { GAME_EVENTS } from "../bridge/gameEvents";
+import { PATH_WIDTH } from "../core/config/gameConfig";
 import { ASSET_KEYS } from "../core/constants/assetKeys";
 import { SCENE_KEYS } from "../core/constants/sceneKeys";
 import type {
@@ -8,7 +10,6 @@ import type {
   GameRunResult,
   GameSpeed,
   GameStateSnapshot,
-  Point,
   StageId,
   TowerKind
 } from "../core/types/gameTypes";
@@ -18,12 +19,10 @@ import {
   type GameModeThemeDefinition
 } from "../data/gameModes";
 import { enemyDefinitions } from "../data/enemies/enemyDefinitions";
-import {
-  defaultStageId,
-  getStageDefinition
-} from "../data/stages/stageDefinitions";
+import { defaultStageId, getStageDefinition } from "../data/stages/stageDefinitions";
+import { resolveStageTheme } from "../data/stages/resolveStageTheme";
 import { towerDefinitions } from "../data/towers/towerDefinitions";
-import { waveDefinitions } from "../data/waves/waveDefinitions";
+import { getWaveDefinitions } from "../data/waves/waveDefinitions";
 import { getWaveSummary } from "../gameCatalog";
 import { EconomyManager } from "../managers/EconomyManager";
 import { EnemyManager } from "../managers/EnemyManager";
@@ -31,8 +30,6 @@ import { ProjectileManager } from "../managers/ProjectileManager";
 import { SelectionManager } from "../managers/SelectionManager";
 import { TowerManager } from "../managers/TowerManager";
 import { WaveManager } from "../managers/WaveManager";
-
-type Direction = "north" | "south" | "east" | "west";
 
 export class GameScene extends Phaser.Scene {
   private stage = getStageDefinition(defaultStageId);
@@ -44,12 +41,15 @@ export class GameScene extends Phaser.Scene {
   private towerManager!: TowerManager;
   private selectionManager!: SelectionManager;
   private waveManager!: WaveManager;
+  private audio?: GameAudioController;
+  private ambientLoop?: Phaser.Time.TimerEvent;
   private speed: GameSpeed = 1;
   private started = false;
   private finished = false;
   private paused = false;
   private runStartedAt = 0;
   private statePushElapsed = 0;
+  private stageWaves = getWaveDefinitions(defaultStageId);
 
   constructor() {
     super(SCENE_KEYS.Game);
@@ -60,7 +60,11 @@ export class GameScene extends Phaser.Scene {
     const stageId = (this.game.registry.get("stageId") as StageId | undefined) ?? defaultStageId;
     this.modeId = (this.game.registry.get("gameMode") as GameModeId | undefined) ?? defaultGameModeId;
     this.stage = getStageDefinition(stageId);
-    this.theme = getGameModeDefinition(this.modeId);
+    this.theme = resolveStageTheme(getGameModeDefinition(this.modeId), this.stage);
+    this.stageWaves = getWaveDefinitions(this.stage.id);
+    this.audio = new GameAudioController(
+      (this.game.registry.get("soundVolume") as number | undefined) ?? 0.75
+    );
 
     this.cameras.main.setRoundPixels(true);
     this.cameras.main.setBackgroundColor(this.theme.visuals.backgroundColor);
@@ -71,17 +75,24 @@ export class GameScene extends Phaser.Scene {
     this.enemyManager = new EnemyManager(this, this.stage, enemyDefinitions, this.theme, {
       onEnemyKilled: (enemy) => {
         this.economy.addReward(enemy.definition.reward);
+        this.audio?.playEnemyDown(enemy.definition.key);
         this.emitState();
       },
       onEnemyEscaped: () => {
         this.economy.loseLife(1);
+        this.audio?.playEnemyEscape();
         this.emitState();
         if (this.economy.getLives() <= 0) {
           this.finishRun(false);
         }
       }
     });
-    this.projectileManager = new ProjectileManager(this, this.enemyManager, this.theme);
+    this.projectileManager = new ProjectileManager(
+      this,
+      this.enemyManager,
+      this.theme,
+      (kind, specialEffect) => this.audio?.playImpact(kind, specialEffect)
+    );
     this.towerManager = new TowerManager(
       this,
       this.stage,
@@ -89,11 +100,13 @@ export class GameScene extends Phaser.Scene {
       this.theme,
       this.enemyManager,
       this.projectileManager,
-      (slotId) => this.selectSlot(slotId)
+      (slotId) => this.selectSlot(slotId),
+      (towerType, specialEffect) => this.audio?.playTowerFire(towerType, specialEffect)
     );
-    this.waveManager = new WaveManager(waveDefinitions, this.enemyManager, {
+    this.waveManager = new WaveManager(this.stageWaves, this.enemyManager, {
       onWaveStarted: (wave, totalWaves) => {
         bus.emit(GAME_EVENTS.onWaveChanged, { currentWave: wave, totalWaves });
+        this.audio?.playWaveStart(wave);
         this.emitState();
       },
       onWaveCleared: (wave) => {
@@ -116,6 +129,8 @@ export class GameScene extends Phaser.Scene {
     this.scene.launch(SCENE_KEYS.Ui);
 
     const handleStart = () => {
+      void this.audio?.resume();
+      this.audio?.playUiConfirm();
       if (this.started) {
         this.scene.restart({ autoStart: true });
         return;
@@ -124,15 +139,23 @@ export class GameScene extends Phaser.Scene {
     };
     const handlePause = () => {
       this.paused = true;
+      this.audio?.playUiToggle(false);
       this.emitState();
     };
     const handleResume = () => {
+      void this.audio?.resume();
       this.paused = false;
+      this.audio?.playUiToggle(true);
       this.emitState();
     };
     const handleSpeed = (payload: { speed: GameSpeed }) => {
       this.speed = payload.speed;
+      this.audio?.playSpeedShift(payload.speed);
       this.emitState();
+    };
+    const handleVolume = (payload: { volume: number }) => {
+      this.game.registry.set("soundVolume", payload.volume);
+      this.audio?.setVolume(payload.volume);
     };
     const handleBuild = (payload: { slotId: string; towerType: TowerKind }) => {
       const message = this.towerManager.buildTower(payload.slotId, payload.towerType, this.economy);
@@ -163,6 +186,7 @@ export class GameScene extends Phaser.Scene {
     bus.on(GAME_COMMANDS.pauseGame, handlePause);
     bus.on(GAME_COMMANDS.resumeGame, handleResume);
     bus.on(GAME_COMMANDS.setGameSpeed, handleSpeed);
+    bus.on(GAME_COMMANDS.setSoundVolume, handleVolume);
     bus.on(GAME_COMMANDS.buildTower, handleBuild);
     bus.on(GAME_COMMANDS.upgradeTower, handleUpgrade);
     bus.on(GAME_COMMANDS.sellTower, handleSell);
@@ -172,15 +196,19 @@ export class GameScene extends Phaser.Scene {
       bus.off(GAME_COMMANDS.pauseGame, handlePause);
       bus.off(GAME_COMMANDS.resumeGame, handleResume);
       bus.off(GAME_COMMANDS.setGameSpeed, handleSpeed);
+      bus.off(GAME_COMMANDS.setSoundVolume, handleVolume);
       bus.off(GAME_COMMANDS.buildTower, handleBuild);
       bus.off(GAME_COMMANDS.upgradeTower, handleUpgrade);
       bus.off(GAME_COMMANDS.sellTower, handleSell);
+      this.stopAmbientLoop();
       this.projectileManager.clear();
       this.enemyManager.clear();
       this.towerManager.clear();
+      this.audio?.destroy();
     });
 
     this.input.on("pointerdown", (_pointer: Phaser.Input.Pointer, objects: unknown[]) => {
+      void this.audio?.resume();
       if (!objects.length) {
         this.selectionManager.clear();
         this.towerManager.setSelectedSlot(null);
@@ -191,7 +219,7 @@ export class GameScene extends Phaser.Scene {
     this.emitState();
 
     if (data?.autoStart) {
-      this.startRun();
+      handleStart();
     }
   }
 
@@ -222,6 +250,7 @@ export class GameScene extends Phaser.Scene {
 
   private drawBattlefield() {
     const tileSize = 64;
+    this.drawBackdrop();
 
     for (let y = tileSize / 2; y < this.stage.height + tileSize; y += tileSize) {
       for (let x = tileSize / 2; x < this.stage.width + tileSize; x += tileSize) {
@@ -237,46 +266,33 @@ export class GameScene extends Phaser.Scene {
     this.drawZones();
     this.drawRoad();
     this.placeProps();
+    this.drawMarkers();
+  }
 
-    const startPoint = this.stage.path[0];
-    const endPoint = this.stage.path[this.stage.path.length - 1];
+  private drawBackdrop() {
+    const backgroundTint = Phaser.Display.Color.HexStringToColor(
+      this.theme.visuals.backgroundColor
+    ).color;
 
-    if (startPoint) {
-      this.add.circle(startPoint.x, startPoint.y, 18, this.theme.visuals.startTint, 0.86).setDepth(4);
-      this.add
-        .text(startPoint.x + 24, startPoint.y - 18, "진입", {
-          fontFamily: "Kenney Future Narrow, Pretendard, sans-serif",
-          fontSize: "14px",
-          color: "#eff9ff"
-        })
-        .setDepth(4);
-    }
-
-    if (endPoint) {
-      this.add.circle(endPoint.x, endPoint.y, 20, this.theme.visuals.endTint, 0.9).setDepth(4);
-      this.add
-        .text(endPoint.x - 18, endPoint.y + 24, "도달", {
-          fontFamily: "Kenney Future Narrow, Pretendard, sans-serif",
-          fontSize: "14px",
-          color: "#eff9ff"
-        })
-        .setDepth(4);
-    }
-
+    this.add.rectangle(480, 270, 960, 540, backgroundTint, 1).setDepth(-4);
     this.add
-      .text(20, 18, `${this.stage.name} · ${this.theme.label}`, {
-        fontFamily: "Kenney Future, Pretendard, sans-serif",
-        fontSize: "24px",
-        color: "#eff9ff"
-      })
-      .setDepth(5);
+      .circle(164, 112, 190, this.stage.atmosphere.glowTint, this.stage.atmosphere.glowAlpha)
+      .setDepth(-3);
     this.add
-      .text(20, 48, this.stage.description, {
-        fontFamily: "Pretendard, Noto Sans KR, sans-serif",
-        fontSize: "15px",
-        color: "#9fd9e2"
-      })
-      .setDepth(5);
+      .circle(812, 412, 220, this.stage.atmosphere.glowTintAlt, this.stage.atmosphere.glowAlpha)
+      .setDepth(-3);
+    this.add
+      .rectangle(480, 270, 960, 540, this.stage.atmosphere.hazeTint, this.stage.atmosphere.hazeAlpha)
+      .setDepth(-2);
+
+    const grid = this.add.graphics().setDepth(-1);
+    grid.lineStyle(1, 0x938ba1, 0.08);
+    for (let x = 0; x <= this.stage.width; x += 48) {
+      grid.lineBetween(x, 0, x, this.stage.height);
+    }
+    for (let y = 0; y <= this.stage.height; y += 48) {
+      grid.lineBetween(0, y, this.stage.width, y);
+    }
   }
 
   private drawZones() {
@@ -297,7 +313,24 @@ export class GameScene extends Phaser.Scene {
   }
 
   private drawRoad() {
-    const step = 48;
+    this.drawRoadLayer(PATH_WIDTH + 12, 0xb0c6ce, 0.9, 1.8);
+    this.drawRoadLayer(PATH_WIDTH, this.theme.visuals.roadTint, 0.95, 2);
+
+    const guide = this.add.graphics().setDepth(2.2);
+    guide.lineStyle(6, this.stage.atmosphere.pathGuideTint, this.stage.atmosphere.pathGuideAlpha);
+    guide.beginPath();
+    const [firstPoint, ...rest] = this.stage.path;
+    guide.moveTo(firstPoint?.x ?? 0, firstPoint?.y ?? 0);
+    rest.forEach((point) => guide.lineTo(point.x, point.y));
+    guide.strokePath();
+  }
+
+  private drawRoadLayer(width: number, color: number, alpha: number, depth: number) {
+    const radius = width / 2;
+
+    this.stage.path.forEach((point) => {
+      this.add.circle(point.x, point.y, radius, color, alpha).setDepth(depth);
+    });
 
     this.stage.path.slice(0, -1).forEach((point, index) => {
       const next = this.stage.path[index + 1];
@@ -305,38 +338,15 @@ export class GameScene extends Phaser.Scene {
         return;
       }
 
-      const direction = this.getDirection(point, next);
-      const roadKey =
-        direction === "east" || direction === "west"
-          ? ASSET_KEYS.terrain.roadHorizontal
-          : ASSET_KEYS.terrain.roadVertical;
       const distance = Phaser.Math.Distance.Between(point.x, point.y, next.x, next.y);
-      const steps = Math.max(1, Math.ceil(distance / step));
-
-      for (let offset = 0; offset <= steps; offset += 1) {
-        const ratio = offset / steps;
-        const x = Phaser.Math.Linear(point.x, next.x, ratio);
-        const y = Phaser.Math.Linear(point.y, next.y, ratio);
-        this.add
-          .image(x, y, roadKey)
-          .setDisplaySize(64, 64)
-          .setTint(this.theme.visuals.roadTint)
-          .setDepth(2);
-      }
-    });
-
-    this.stage.path.slice(1, -1).forEach((point, index) => {
-      const previous = this.stage.path[index];
-      const next = this.stage.path[index + 2];
-      if (!previous || !next) {
-        return;
-      }
+      const angle = Phaser.Math.Angle.Between(point.x, point.y, next.x, next.y);
+      const midpointX = (point.x + next.x) / 2;
+      const midpointY = (point.y + next.y) / 2;
 
       this.add
-        .image(point.x, point.y, this.getCornerKey(previous, point, next))
-        .setDisplaySize(64, 64)
-        .setTint(this.theme.visuals.roadTint)
-        .setDepth(3);
+        .rectangle(midpointX, midpointY, distance + width, width, color, alpha)
+        .setRotation(angle)
+        .setDepth(depth);
     });
   }
 
@@ -354,30 +364,31 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  private getDirection(from: Point, to: Point): Direction {
-    if (from.x === to.x) {
-      return from.y < to.y ? "south" : "north";
+  private drawMarkers() {
+    const startPoint = this.stage.path[0];
+    const endPoint = this.stage.path[this.stage.path.length - 1];
+
+    if (startPoint) {
+      this.add.circle(startPoint.x, startPoint.y, 18, this.theme.visuals.startTint, 0.86).setDepth(4);
+      this.add
+        .text(startPoint.x + 24, startPoint.y - 18, "진입", {
+          fontFamily: '"Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif',
+          fontSize: "14px",
+          color: "#324349"
+        })
+        .setDepth(4);
     }
 
-    return from.x < to.x ? "east" : "west";
-  }
-
-  private getCornerKey(previous: Point, current: Point, next: Point) {
-    const first = this.getDirection(previous, current);
-    const second = this.getDirection(current, next);
-    const directions = new Set<Direction>([first, second]);
-
-    if (directions.has("north") && directions.has("east")) {
-      return ASSET_KEYS.terrain.roadCornerLl;
+    if (endPoint) {
+      this.add.circle(endPoint.x, endPoint.y, 20, this.theme.visuals.endTint, 0.9).setDepth(4);
+      this.add
+        .text(endPoint.x - 18, endPoint.y + 24, "도달", {
+          fontFamily: '"Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif',
+          fontSize: "14px",
+          color: "#324349"
+        })
+        .setDepth(4);
     }
-    if (directions.has("north") && directions.has("west")) {
-      return ASSET_KEYS.terrain.roadCornerLr;
-    }
-    if (directions.has("south") && directions.has("east")) {
-      return ASSET_KEYS.terrain.roadCornerUl;
-    }
-
-    return ASSET_KEYS.terrain.roadCornerUr;
   }
 
   private startRun() {
@@ -387,9 +398,28 @@ export class GameScene extends Phaser.Scene {
     this.paused = false;
     this.speed = 1;
     this.runStartedAt = Date.now();
+    this.startAmbientLoop();
     this.waveManager.start();
     bus.emit(GAME_EVENTS.onRunStarted, { stageId: this.stage.id });
     this.emitState();
+  }
+
+  private startAmbientLoop() {
+    this.stopAmbientLoop();
+    this.ambientLoop = this.time.addEvent({
+      delay: 1600,
+      loop: true,
+      callback: () => {
+        if (!this.paused && this.started && !this.finished) {
+          this.audio?.playAmbientPulse(this.stage.id);
+        }
+      }
+    });
+  }
+
+  private stopAmbientLoop() {
+    this.ambientLoop?.destroy();
+    this.ambientLoop = undefined;
   }
 
   private selectSlot(slotId: string) {
@@ -417,7 +447,8 @@ export class GameScene extends Phaser.Scene {
       nextWaveSummary: getWaveSummary(
         this.started
           ? Math.min(this.waveManager.getCurrentWave() + 1, this.waveManager.getTotalWaves())
-          : 1
+          : 1,
+        this.stage.id
       ),
       speed: this.speed,
       score: this.economy.getScore(),
@@ -447,6 +478,12 @@ export class GameScene extends Phaser.Scene {
 
     this.finished = true;
     this.paused = false;
+    this.stopAmbientLoop();
+    if (cleared) {
+      this.audio?.playVictory();
+    } else {
+      this.audio?.playDefeat();
+    }
     this.emitState();
 
     const result: GameRunResult = {

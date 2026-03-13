@@ -9,6 +9,10 @@ export class AuthService {
 
   async login(payload: LoginDto) {
     const nickname = payload.nickname?.trim() || mockUser.nickname;
+    if (!this.prisma.isAvailable()) {
+      return this.getFallbackSession(payload.email, nickname);
+    }
+
     const user = await this.prisma.user.upsert({
       where: {
         email: payload.email
@@ -28,6 +32,10 @@ export class AuthService {
   }
 
   async getSession() {
+    if (!this.prisma.isAvailable()) {
+      return this.getFallbackSession(mockUser.email, mockUser.nickname);
+    }
+
     const existingUser = await this.prisma.user.findFirst({
       include: {
         currencies: true
@@ -72,6 +80,17 @@ export class AuthService {
       role: user.role,
       gold: user.currencies?.gold ?? mockUser.gold,
       gems: user.currencies?.gem ?? mockUser.gems
+    };
+  }
+
+  private getFallbackSession(email: string, nickname: string) {
+    return {
+      id: mockUser.id,
+      email,
+      nickname,
+      role: mockUser.role,
+      gold: mockUser.gold,
+      gems: mockUser.gems
     };
   }
 

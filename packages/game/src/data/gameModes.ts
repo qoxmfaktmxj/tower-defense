@@ -1,10 +1,5 @@
 import { ASSET_KEYS } from "../core/constants/assetKeys";
-import type {
-  EnemyKind,
-  GameModeId,
-  StagePropKind,
-  TowerKind
-} from "../core/types/gameTypes";
+import type { EnemyKind, GameModeId, StagePropKind, TowerKind } from "../core/types/gameTypes";
 
 export interface GameModeCatalogEntry {
   id: GameModeId;
@@ -62,7 +57,7 @@ export const gameModeDefinitions: Record<GameModeId, GameModeThemeDefinition> = 
     id: "mode-a",
     name: "프론트라인",
     label: "기본 전장 테마",
-    description: "기본 타워 디펜스 전장입니다. 시야가 깔끔하고 정보가 가장 잘 읽힙니다.",
+    description: "가시성과 전투 정보 전달에 집중한 기본 타워 디펜스 전장입니다.",
     assets: {
       terrain: {
         grass: `${currentAssetRoot}/terrain/grass.png`,
@@ -107,17 +102,17 @@ export const gameModeDefinitions: Record<GameModeId, GameModeThemeDefinition> = 
       }
     },
     visuals: {
-      backgroundColor: "#071118",
-      grassTint: 0xffffff,
-      grassAltTint: 0xe7fff1,
-      roadTint: 0xffffff,
-      patchTint: 0xffffff,
-      slotAvailableTint: 0x74d88b,
-      slotOccupiedTint: 0x68d4ef,
-      slotSelectedTint: 0xf4c15b,
-      slotGlowTint: 0x68d4ef,
-      towerPlateOuter: 0x0f2933,
-      towerPlateInner: 0x1c4d5d,
+      backgroundColor: "#f6fffb",
+      grassTint: 0xd7fdec,
+      grassAltTint: 0xb2e4db,
+      roadTint: 0xfbfffd,
+      patchTint: 0xebf7f2,
+      slotAvailableTint: 0xa9fbd7,
+      slotOccupiedTint: 0xb0c6ce,
+      slotSelectedTint: 0x938ba1,
+      slotGlowTint: 0xb2e4db,
+      towerPlateOuter: 0x6b7f86,
+      towerPlateInner: 0x93b7be,
       towerSelectedTint: 0xffffff,
       towerScales: {
         arrow: 0.9,
@@ -133,15 +128,15 @@ export const gameModeDefinitions: Record<GameModeId, GameModeThemeDefinition> = 
       projectileTints: {
         arrow: 0xffffff,
         cannon: 0xffffff,
-        frost: 0xa8e7ff
+        frost: 0xb2e4db
       },
       hitTint: 0xffffff,
-      explosionTint: 0xffc16d,
-      freezeTint: 0x9edcff,
-      startTint: 0x69d7f2,
-      endTint: 0xf4c15b,
-      propTint: 0xffffff,
-      overdriveTint: 0xfff1a6
+      explosionTint: 0xcabed3,
+      freezeTint: 0xb2e4db,
+      startTint: 0xa9fbd7,
+      endTint: 0x938ba1,
+      propTint: 0xfbfffd,
+      overdriveTint: 0xd7fdec
     }
   }
 };

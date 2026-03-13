@@ -3,19 +3,19 @@ import type { TowerDefinition } from "../../core/types/gameTypes";
 export const towerDefinitions: Record<TowerDefinition["key"], TowerDefinition> = {
   arrow: {
     key: "arrow",
-    displayName: "기관포 타워",
+    displayName: "기관 포대",
     color: 0x7ed5df,
     buildCost: 70,
     levels: [
       {
-        damage: 16,
+        damage: 19,
         range: 150,
         fireRateMs: 600,
         projectileSpeed: 360,
         projectileSize: 6
       },
       {
-        damage: 26,
+        damage: 31,
         range: 168,
         fireRateMs: 520,
         projectileSpeed: 380,
@@ -23,7 +23,7 @@ export const towerDefinitions: Record<TowerDefinition["key"], TowerDefinition> =
         upgradeCost: 65
       },
       {
-        damage: 38,
+        damage: 46,
         range: 182,
         fireRateMs: 430,
         projectileSpeed: 410,
@@ -31,7 +31,7 @@ export const towerDefinitions: Record<TowerDefinition["key"], TowerDefinition> =
         upgradeCost: 90
       },
       {
-        damage: 54,
+        damage: 65,
         range: 198,
         fireRateMs: 340,
         projectileSpeed: 440,
@@ -40,7 +40,7 @@ export const towerDefinitions: Record<TowerDefinition["key"], TowerDefinition> =
         upgradeCost: 125
       },
       {
-        damage: 88,
+        damage: 106,
         range: 224,
         fireRateMs: 240,
         projectileSpeed: 480,
@@ -53,12 +53,12 @@ export const towerDefinitions: Record<TowerDefinition["key"], TowerDefinition> =
   },
   cannon: {
     key: "cannon",
-    displayName: "중화기 타워",
+    displayName: "중화기 포대",
     color: 0xf0a64d,
     buildCost: 110,
     levels: [
       {
-        damage: 42,
+        damage: 50,
         range: 138,
         fireRateMs: 1200,
         projectileSpeed: 260,
@@ -66,7 +66,7 @@ export const towerDefinitions: Record<TowerDefinition["key"], TowerDefinition> =
         splashRadius: 40
       },
       {
-        damage: 64,
+        damage: 77,
         range: 150,
         fireRateMs: 1080,
         projectileSpeed: 280,
@@ -75,7 +75,7 @@ export const towerDefinitions: Record<TowerDefinition["key"], TowerDefinition> =
         upgradeCost: 85
       },
       {
-        damage: 92,
+        damage: 110,
         range: 164,
         fireRateMs: 980,
         projectileSpeed: 300,
@@ -84,7 +84,7 @@ export const towerDefinitions: Record<TowerDefinition["key"], TowerDefinition> =
         upgradeCost: 120
       },
       {
-        damage: 128,
+        damage: 154,
         range: 176,
         fireRateMs: 860,
         projectileSpeed: 320,
@@ -93,7 +93,7 @@ export const towerDefinitions: Record<TowerDefinition["key"], TowerDefinition> =
         upgradeCost: 165
       },
       {
-        damage: 210,
+        damage: 252,
         range: 198,
         fireRateMs: 720,
         projectileSpeed: 340,
@@ -106,12 +106,12 @@ export const towerDefinitions: Record<TowerDefinition["key"], TowerDefinition> =
   },
   frost: {
     key: "frost",
-    displayName: "빙결 타워",
+    displayName: "빙결 포대",
     color: 0x7f8cff,
     buildCost: 95,
     levels: [
       {
-        damage: 12,
+        damage: 14,
         range: 144,
         fireRateMs: 900,
         projectileSpeed: 280,
@@ -120,7 +120,7 @@ export const towerDefinitions: Record<TowerDefinition["key"], TowerDefinition> =
         slowDurationMs: 1100
       },
       {
-        damage: 20,
+        damage: 24,
         range: 156,
         fireRateMs: 760,
         projectileSpeed: 300,
@@ -130,7 +130,7 @@ export const towerDefinitions: Record<TowerDefinition["key"], TowerDefinition> =
         upgradeCost: 80
       },
       {
-        damage: 30,
+        damage: 36,
         range: 170,
         fireRateMs: 660,
         projectileSpeed: 320,
@@ -140,7 +140,7 @@ export const towerDefinitions: Record<TowerDefinition["key"], TowerDefinition> =
         upgradeCost: 110
       },
       {
-        damage: 46,
+        damage: 55,
         range: 186,
         fireRateMs: 560,
         projectileSpeed: 340,
@@ -151,7 +151,7 @@ export const towerDefinitions: Record<TowerDefinition["key"], TowerDefinition> =
         upgradeCost: 150
       },
       {
-        damage: 70,
+        damage: 84,
         range: 208,
         fireRateMs: 440,
         projectileSpeed: 360,

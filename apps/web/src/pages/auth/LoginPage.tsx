@@ -31,10 +31,10 @@ export const LoginPage = () => {
     <div className="auth-shell">
       <section className="auth-panel">
         <p className="panel-tag">KOREAN MVP</p>
-        <h1>타워 디펜스에 접속</h1>
+        <h1>타워 디펜스 접속</h1>
         <p className="auth-copy">
-          한국어 UI 기준으로 구성한 브라우저 타워 디펜스입니다. 로그인 후 로비에서 랭킹을 확인하고
-          바로 전장으로 출격할 수 있습니다.
+          한국어 UI 기준으로 구성된 브라우저 타워 디펜스입니다. 로그인 후 로비에서 랭킹을
+          확인하고 바로 전장으로 출격할 수 있습니다.
         </p>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label>
@@ -51,13 +51,13 @@ export const LoginPage = () => {
             <input
               maxLength={12}
               onChange={(event) => setNickname(event.target.value)}
-              placeholder="게임 내 표시 이름"
+              placeholder="게임에서 표시될 이름"
               type="text"
               value={nickname}
             />
           </label>
           <button className="button button--primary" disabled={loginMutation.isPending} type="submit">
-            {loginMutation.isPending ? "접속 중..." : "지휘 연결"}
+            {loginMutation.isPending ? "접속 중..." : "지휘관 연결"}
           </button>
         </form>
         <p className="auth-footnote">

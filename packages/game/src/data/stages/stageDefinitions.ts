@@ -4,7 +4,8 @@ export const stageDefinitions: Record<StageId, StageDefinition> = {
   "han-river-front": {
     id: "han-river-front",
     name: "한강 방어선",
-    description: "초입과 교차로가 많은 기본 전장입니다. 안정적인 첫 방어선 구축에 적합합니다.",
+    description:
+      "강변 보급로를 따라 적이 길게 밀고 들어옵니다. 긴 직선 구간이 많아 기본 포대 운영이 쉬운 전장입니다.",
     width: 960,
     height: 540,
     initialGold: 260,
@@ -39,12 +40,48 @@ export const stageDefinitions: Record<StageId, StageDefinition> = {
       { kind: "treeSmall", x: 628, y: 76, scale: 0.92, angle: -10, depth: 1.4 },
       { kind: "crateMetal", x: 704, y: 82, scale: 1, depth: 1.5 },
       { kind: "treeLarge", x: 870, y: 440, scale: 1.08, depth: 1.4 }
-    ]
+    ],
+    visuals: {
+      backgroundColor: "#f6fffb",
+      grassTint: 0xd7fdec,
+      grassAltTint: 0xb2e4db,
+      roadTint: 0xfbfffd,
+      patchTint: 0xeef8ef,
+      slotAvailableTint: 0xa9fbd7,
+      slotOccupiedTint: 0xb0c6ce,
+      slotSelectedTint: 0x938ba1,
+      slotGlowTint: 0xb2e4db,
+      propTint: 0xf8fffc,
+      startTint: 0xa9fbd7,
+      endTint: 0x938ba1,
+      overdriveTint: 0xd7fdec
+    },
+    atmosphere: {
+      glowTint: 0xb2e4db,
+      glowTintAlt: 0xa9fbd7,
+      glowAlpha: 0.16,
+      hazeTint: 0xf4fffb,
+      hazeAlpha: 0.28,
+      pathGuideTint: 0xb0c6ce,
+      pathGuideAlpha: 0.22,
+      panelTint: 0xf8fffc,
+      panelStrokeTint: 0x938ba1
+    },
+    presentation: {
+      tagline: "강변 방어선 유지",
+      sector: "한강 북단 제7전력선",
+      threatLevel: "보통",
+      weather: "습기 짙은 강안 지역",
+      recommendedTower: "arrow",
+      recommendedTowerLabel: "기관 포대",
+      tacticalNote: "직선 구간이 길어 기관 포대를 여러 개 겹치면 초반 방어가 안정됩니다."
+    }
   },
   "metro-grid": {
     id: "metro-grid",
     name: "메트로 그리드",
-    description: "긴 직선과 깊은 코너가 반복되는 도심형 전장입니다. 사거리 효율이 중요합니다.",
+    description:
+      "차가운 도시 전력망을 따라 적이 방향을 자주 바꿉니다. 감속과 교차 화력이 중요한 전장입니다.",
     width: 960,
     height: 540,
     initialGold: 280,
@@ -83,12 +120,48 @@ export const stageDefinitions: Record<StageId, StageDefinition> = {
       { kind: "crateMetal", x: 694, y: 496, scale: 1, depth: 1.5 },
       { kind: "barricade", x: 890, y: 120, scale: 1.02, angle: 90, depth: 1.5 },
       { kind: "treeSmall", x: 908, y: 392, scale: 0.92, depth: 1.4 }
-    ]
+    ],
+    visuals: {
+      backgroundColor: "#f4fbfd",
+      grassTint: 0xd7f0ec,
+      grassAltTint: 0xb0c6ce,
+      roadTint: 0xfbfeff,
+      patchTint: 0xe5eef1,
+      slotAvailableTint: 0xb2e4db,
+      slotOccupiedTint: 0x938ba1,
+      slotSelectedTint: 0xa9fbd7,
+      slotGlowTint: 0xb0c6ce,
+      propTint: 0xf5fbff,
+      startTint: 0xb2e4db,
+      endTint: 0x938ba1,
+      overdriveTint: 0xd7fdec
+    },
+    atmosphere: {
+      glowTint: 0xb0c6ce,
+      glowTintAlt: 0xb2e4db,
+      glowAlpha: 0.14,
+      hazeTint: 0xf0f5f6,
+      hazeAlpha: 0.32,
+      pathGuideTint: 0x938ba1,
+      pathGuideAlpha: 0.18,
+      panelTint: 0xf7fcfe,
+      panelStrokeTint: 0x938ba1
+    },
+    presentation: {
+      tagline: "도심 전력망 교전",
+      sector: "메트로 구역 7 전력선",
+      threatLevel: "상",
+      weather: "차가운 도시 조명",
+      recommendedTower: "frost",
+      recommendedTowerLabel: "빙결 포대",
+      tacticalNote:
+        "코너와 교차 구간이 많아 빙결 포대와 중화기 포대를 섞으면 후반 유지력이 좋아집니다."
+    }
   },
   "red-canyon": {
     id: "red-canyon",
     name: "레드 캐니언",
-    description: "긴 초입과 다층 코너가 이어지는 사막형 전장입니다. 후반 화력이 크게 요구됩니다.",
+    description: "건조한 협곡 보급로입니다. 후반 중장갑과 보스 압박이 강한 전장입니다.",
     width: 960,
     height: 540,
     initialGold: 300,
@@ -130,17 +203,62 @@ export const stageDefinitions: Record<StageId, StageDefinition> = {
       { kind: "crateMetal", x: 646, y: 508, scale: 1.02, depth: 1.5 },
       { kind: "sandbag", x: 780, y: 388, scale: 1, depth: 1.5 },
       { kind: "treeSmall", x: 896, y: 48, scale: 0.9, depth: 1.4 }
-    ]
+    ],
+    visuals: {
+      backgroundColor: "#fbf7fd",
+      grassTint: 0xe8dbef,
+      grassAltTint: 0xd8c9e1,
+      roadTint: 0xfffbff,
+      patchTint: 0xf0e5f5,
+      slotAvailableTint: 0xb2e4db,
+      slotOccupiedTint: 0x938ba1,
+      slotSelectedTint: 0xa9fbd7,
+      slotGlowTint: 0x938ba1,
+      propTint: 0xfdf9ff,
+      startTint: 0xb2e4db,
+      endTint: 0x938ba1,
+      overdriveTint: 0xd7fdec
+    },
+    atmosphere: {
+      glowTint: 0x938ba1,
+      glowTintAlt: 0xb0c6ce,
+      glowAlpha: 0.16,
+      hazeTint: 0xf8effb,
+      hazeAlpha: 0.34,
+      pathGuideTint: 0xb0c6ce,
+      pathGuideAlpha: 0.2,
+      panelTint: 0xfcf8ff,
+      panelStrokeTint: 0x938ba1
+    },
+    presentation: {
+      tagline: "협곡 보급로 차단",
+      sector: "서부 협곡 수송선",
+      threatLevel: "최상",
+      weather: "모래먼지와 열기",
+      recommendedTower: "cannon",
+      recommendedTowerLabel: "중화기 포대",
+      tacticalNote:
+        "후반 중장갑 비중이 높아 중화기 포대를 먼저 준비하고 보스 진입 구간에 화력을 집중해야 합니다."
+    }
   }
 };
 
 export const defaultStageId: StageId = "han-river-front";
 
-export const stageCatalog = Object.values(stageDefinitions).map(({ id, name, description }) => ({
-  id,
-  name,
-  description
-}));
+export const stageCatalog = Object.values(stageDefinitions).map(
+  ({ id, name, description, presentation }) => ({
+    id,
+    name,
+    description,
+    tagline: presentation.tagline,
+    sector: presentation.sector,
+    threatLevel: presentation.threatLevel,
+    weather: presentation.weather,
+    recommendedTower: presentation.recommendedTower,
+    recommendedTowerLabel: presentation.recommendedTowerLabel,
+    tacticalNote: presentation.tacticalNote
+  })
+);
 
 export const getStageDefinition = (stageId: StageId) =>
   stageDefinitions[stageId] ?? stageDefinitions[defaultStageId];
