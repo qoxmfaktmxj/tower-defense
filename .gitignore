@@ -10,5 +10,6 @@ coverage
 *.log
 .playwright-cli
 output
+test-results
 .tmp-assets
 apps/web/public/assets/game/modes

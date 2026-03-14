@@ -29,13 +29,23 @@ export const LoginPage = () => {
 
   return (
     <div className="auth-shell">
-      <section className="auth-panel">
-        <p className="panel-tag">KOREAN MVP</p>
-        <h1>타워 디펜스 접속</h1>
+      <section className="auth-brief">
+        <p className="panel-tag">TACTICAL ACCESS</p>
+        <h1>전술 방어망 접속</h1>
         <p className="auth-copy">
-          한국어 UI 기준으로 구성된 브라우저 타워 디펜스입니다. 로그인 후 로비에서 랭킹을
-          확인하고 바로 전장으로 출격할 수 있습니다.
+          전장 선택, 실시간 랭킹, 전투 결과 제출까지 한 흐름으로 연결된 한국어 브라우저 타워
+          디펜스 빌드입니다.
         </p>
+        <div className="status-list status-list--stacked">
+          <span>3개 전장 / 50웨이브 / 5단 포대 업그레이드</span>
+          <span>전체 화면, 단축키, 세션 유지 지원</span>
+        </div>
+      </section>
+
+      <section className="auth-panel">
+        <p className="panel-tag">COMMAND LOGIN</p>
+        <h1>지휘관 인증</h1>
+        <p className="auth-copy">테스트 계정으로 바로 접속할 수 있습니다.</p>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label>
             <span>이메일</span>
@@ -51,17 +61,17 @@ export const LoginPage = () => {
             <input
               maxLength={12}
               onChange={(event) => setNickname(event.target.value)}
-              placeholder="게임에서 표시될 이름"
+              placeholder="표시 이름"
               type="text"
               value={nickname}
             />
           </label>
           <button className="button button--primary" disabled={loginMutation.isPending} type="submit">
-            {loginMutation.isPending ? "접속 중..." : "지휘관 연결"}
+            {loginMutation.isPending ? "연결 중..." : "전장 접속"}
           </button>
         </form>
         <p className="auth-footnote">
-          계정이 없다면 <Link to="/signup">테스트 계정 등록</Link> 페이지로 이동하세요.
+          테스트 계정이 필요하면 <Link to="/signup">간단 등록 안내</Link>를 확인하십시오.
         </p>
       </section>
     </div>

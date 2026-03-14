@@ -106,11 +106,18 @@ export class GameScene extends Phaser.Scene {
     this.waveManager = new WaveManager(this.stageWaves, this.enemyManager, {
       onWaveStarted: (wave, totalWaves) => {
         bus.emit(GAME_EVENTS.onWaveChanged, { currentWave: wave, totalWaves });
+        if (wave % 5 === 0) {
+          this.cameras.main.shake(220, 0.0028, true);
+          this.cameras.main.flash(160, 255, 120, 110, true);
+        } else {
+          this.cameras.main.flash(90, 70, 130, 160, true);
+        }
         this.audio?.playWaveStart(wave);
         this.emitState();
       },
       onWaveCleared: (wave) => {
         this.economy.addWaveClearBonus(wave);
+        this.cameras.main.flash(80, 80, 170, 120, true);
         this.emitState();
       },
       onAllWavesFinished: () => {
@@ -275,23 +282,38 @@ export class GameScene extends Phaser.Scene {
     ).color;
 
     this.add.rectangle(480, 270, 960, 540, backgroundTint, 1).setDepth(-4);
+    this.add.rectangle(480, 270, 960, 540, 0x02070b, 0.18).setDepth(-4);
     this.add
-      .circle(164, 112, 190, this.stage.atmosphere.glowTint, this.stage.atmosphere.glowAlpha)
+      .circle(164, 112, 190, this.stage.atmosphere.glowTint, this.stage.atmosphere.glowAlpha + 0.04)
       .setDepth(-3);
     this.add
-      .circle(812, 412, 220, this.stage.atmosphere.glowTintAlt, this.stage.atmosphere.glowAlpha)
+      .circle(
+        812,
+        412,
+        220,
+        this.stage.atmosphere.glowTintAlt,
+        this.stage.atmosphere.glowAlpha + 0.02
+      )
       .setDepth(-3);
     this.add
       .rectangle(480, 270, 960, 540, this.stage.atmosphere.hazeTint, this.stage.atmosphere.hazeAlpha)
       .setDepth(-2);
+    this.add.rectangle(480, 38, 960, 120, 0x02070b, 0.18).setDepth(-1.8);
+    this.add.rectangle(480, 504, 960, 120, 0x02070b, 0.22).setDepth(-1.8);
 
     const grid = this.add.graphics().setDepth(-1);
-    grid.lineStyle(1, 0x938ba1, 0.08);
+    grid.lineStyle(1, this.stage.atmosphere.pathGuideTint, 0.08);
     for (let x = 0; x <= this.stage.width; x += 48) {
       grid.lineBetween(x, 0, x, this.stage.height);
     }
     for (let y = 0; y <= this.stage.height; y += 48) {
       grid.lineBetween(0, y, this.stage.width, y);
+    }
+
+    const scanlines = this.add.graphics().setDepth(-0.8);
+    scanlines.lineStyle(1, 0xffffff, 0.02);
+    for (let y = 12; y <= this.stage.height; y += 18) {
+      scanlines.lineBetween(0, y, this.stage.width, y);
     }
   }
 
@@ -313,16 +335,20 @@ export class GameScene extends Phaser.Scene {
   }
 
   private drawRoad() {
-    this.drawRoadLayer(PATH_WIDTH + 12, 0xb0c6ce, 0.9, 1.8);
-    this.drawRoadLayer(PATH_WIDTH, this.theme.visuals.roadTint, 0.95, 2);
+    this.drawRoadLayer(PATH_WIDTH + 24, 0x03080d, 0.92, 1.6);
+    this.drawRoadLayer(PATH_WIDTH + 10, 0x1b2b34, 0.96, 1.8);
+    this.drawRoadLayer(PATH_WIDTH, this.theme.visuals.roadTint, 0.94, 2);
+    this.drawRoadLayer(PATH_WIDTH - 16, 0xffffff, 0.08, 2.05);
 
     const guide = this.add.graphics().setDepth(2.2);
-    guide.lineStyle(6, this.stage.atmosphere.pathGuideTint, this.stage.atmosphere.pathGuideAlpha);
+    guide.lineStyle(4, this.stage.atmosphere.pathGuideTint, this.stage.atmosphere.pathGuideAlpha);
     guide.beginPath();
     const [firstPoint, ...rest] = this.stage.path;
     guide.moveTo(firstPoint?.x ?? 0, firstPoint?.y ?? 0);
     rest.forEach((point) => guide.lineTo(point.x, point.y));
     guide.strokePath();
+
+    this.drawLaneLights();
   }
 
   private drawRoadLayer(width: number, color: number, alpha: number, depth: number) {
@@ -350,6 +376,27 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  private drawLaneLights() {
+    const lights = this.add.graphics().setDepth(2.3);
+    lights.fillStyle(this.stage.atmosphere.pathGuideTint, 0.3);
+
+    this.stage.path.slice(0, -1).forEach((point, index) => {
+      const next = this.stage.path[index + 1];
+      if (!next) {
+        return;
+      }
+
+      const distance = Phaser.Math.Distance.Between(point.x, point.y, next.x, next.y);
+      const count = Math.floor(distance / 52);
+      for (let step = 1; step <= count; step += 1) {
+        const ratio = step / (count + 1);
+        const x = Phaser.Math.Linear(point.x, next.x, ratio);
+        const y = Phaser.Math.Linear(point.y, next.y, ratio);
+        lights.fillCircle(x, y, step % 2 === 0 ? 2.6 : 2);
+      }
+    });
+  }
+
   private placeProps() {
     const props = this.stage.props ?? [];
     props.forEach((prop) => {
@@ -369,23 +416,25 @@ export class GameScene extends Phaser.Scene {
     const endPoint = this.stage.path[this.stage.path.length - 1];
 
     if (startPoint) {
-      this.add.circle(startPoint.x, startPoint.y, 18, this.theme.visuals.startTint, 0.86).setDepth(4);
+      this.add.circle(startPoint.x, startPoint.y, 26, this.theme.visuals.startTint, 0.18).setDepth(4);
+      this.add.circle(startPoint.x, startPoint.y, 18, this.theme.visuals.startTint, 0.9).setDepth(4);
       this.add
         .text(startPoint.x + 24, startPoint.y - 18, "진입", {
           fontFamily: '"Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif',
           fontSize: "14px",
-          color: "#324349"
+          color: "#eef7fc"
         })
         .setDepth(4);
     }
 
     if (endPoint) {
-      this.add.circle(endPoint.x, endPoint.y, 20, this.theme.visuals.endTint, 0.9).setDepth(4);
+      this.add.circle(endPoint.x, endPoint.y, 28, this.theme.visuals.endTint, 0.16).setDepth(4);
+      this.add.circle(endPoint.x, endPoint.y, 20, this.theme.visuals.endTint, 0.92).setDepth(4);
       this.add
         .text(endPoint.x - 18, endPoint.y + 24, "도달", {
           fontFamily: '"Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif',
           fontSize: "14px",
-          color: "#324349"
+          color: "#eef7fc"
         })
         .setDepth(4);
     }

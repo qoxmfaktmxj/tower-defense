@@ -9,6 +9,7 @@ type ImpactCallback = (kind: ProjectileConfig["effectKind"], specialEffect: bool
 export class Projectile {
   private readonly scene: Phaser.Scene;
   private readonly sprite: Phaser.GameObjects.Image;
+  private readonly trail: Phaser.GameObjects.Image;
   private readonly config: ProjectileConfig;
   private readonly target: Enemy;
   private readonly theme: GameModeThemeDefinition;
@@ -32,6 +33,12 @@ export class Projectile {
     this.config = config;
     this.theme = theme;
     this.onImpact = onImpact;
+    this.trail = scene.add
+      .image(x, y, ASSET_KEYS.effects.trail)
+      .setDepth(6.6)
+      .setAlpha(config.effectKind === "freeze" ? 0.34 : 0.24)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setTint(this.theme.visuals.projectileTints[this.resolveTowerKind(config)]);
     this.sprite = this.createProjectile(scene, x, y, config);
   }
 
@@ -44,11 +51,15 @@ export class Projectile {
     const targetPosition = this.target.getPosition();
     const angle = Phaser.Math.Angle.Between(this.x, this.y, targetPosition.x, targetPosition.y);
     const step = this.config.speed * (deltaMs / 1000);
+    const previousX = this.x;
+    const previousY = this.y;
 
     this.x += Math.cos(angle) * step;
     this.y += Math.sin(angle) * step;
     this.sprite.setPosition(this.x, this.y);
     this.sprite.setRotation(angle + Math.PI / 2);
+    this.trail.setPosition(previousX, previousY);
+    this.trail.setRotation(angle + Math.PI / 2);
 
     const hitDistance =
       this.config.size + this.target.getRadius() + (this.config.splashRadius ? 6 : 2);
@@ -114,6 +125,7 @@ export class Projectile {
   }
 
   destroy() {
+    this.trail.destroy();
     this.sprite.destroy();
   }
 
@@ -159,6 +171,27 @@ export class Projectile {
       onComplete: () => effect.destroy()
     });
 
+    for (let sparkIndex = 0; sparkIndex < 3; sparkIndex += 1) {
+      const spark = this.scene.add
+        .circle(x, y, 3, effectTint, 0.68)
+        .setDepth(8.8)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const sparkAngle = Phaser.Math.DegToRad(Phaser.Math.Between(-120, 120));
+      const distance = Phaser.Math.Between(18, 34) * scaleBoost;
+      this.scene.tweens.add({
+        targets: spark,
+        alpha: 0,
+        x: x + Math.cos(sparkAngle) * distance,
+        y: y + Math.sin(sparkAngle) * distance,
+        duration: 180,
+        onComplete: () => spark.destroy()
+      });
+    }
+
+    if (this.config.effectKind === "explosion" || this.config.specialEffect) {
+      this.scene.cameras.main.shake(this.config.specialEffect ? 120 : 80, this.config.specialEffect ? 0.0024 : 0.0016, true);
+    }
+
     if (!this.config.specialEffect) {
       return;
     }
@@ -200,6 +233,9 @@ export class Projectile {
 
     projectile.setScale(config.specialEffect ? scale * 1.1 : scale);
     projectile.setTint(this.theme.visuals.projectileTints[this.resolveTowerKind(config)]);
+    this.trail
+      .setScale(config.effectKind === "explosion" ? scale * 1.28 : scale * 1.12)
+      .setTint(this.theme.visuals.projectileTints[this.resolveTowerKind(config)]);
     return projectile;
   }
 

@@ -8,8 +8,7 @@ import { resolveStageTheme } from "../data/stages/resolveStageTheme";
 import { createStagePreview } from "./helpers/createStagePreview";
 
 const FONT_FAMILY = '"Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
-const LABEL_FONT_FAMILY =
-  '"Kenney Future Narrow", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+const LABEL_FONT = '"Kenney Future Narrow", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -26,39 +25,33 @@ export class PreloadScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(theme.visuals.backgroundColor);
 
     this.add.rectangle(480, 270, 960, 540, backgroundTint, 1);
-    this.add.circle(172, 128, 180, stage.atmosphere.glowTint, stage.atmosphere.glowAlpha);
-    this.add.circle(806, 404, 210, stage.atmosphere.glowTintAlt, stage.atmosphere.glowAlpha * 0.9);
-    this.add.rectangle(480, 270, 960, 540, stage.atmosphere.hazeTint, stage.atmosphere.hazeAlpha);
+    this.add.rectangle(480, 270, 960, 540, 0x02070b, 0.32);
+    this.add.circle(162, 118, 184, stage.atmosphere.glowTint, stage.atmosphere.glowAlpha + 0.03);
+    this.add.circle(808, 406, 214, stage.atmosphere.glowTintAlt, stage.atmosphere.glowAlpha + 0.02);
 
-    this.add
-      .text(112, 116, "전장 데이터를 정렬 중", {
-        fontFamily: FONT_FAMILY,
-        fontSize: "30px",
-        fontStyle: "700",
-        color: "#324349"
-      })
-      .setOrigin(0, 0.5);
-    this.add
-      .text(112, 158, `${stage.name} / ${stage.presentation.tagline}`, {
-        fontFamily: FONT_FAMILY,
-        fontSize: "18px",
-        color: "#6f6784"
-      })
-      .setOrigin(0, 0.5);
-    this.add
-      .text(112, 208, stage.presentation.tacticalNote, {
-        fontFamily: FONT_FAMILY,
-        fontSize: "16px",
-        color: "#4f646b",
-        wordWrap: { width: 360 }
-      })
-      .setOrigin(0, 0);
+    this.add.text(112, 110, "전장 링크 초기화", {
+      fontFamily: LABEL_FONT,
+      fontSize: "14px",
+      color: "#7fdfff"
+    });
+    this.add.text(112, 140, stage.name, {
+      fontFamily: FONT_FAMILY,
+      fontSize: "34px",
+      fontStyle: "700",
+      color: "#eef7fc"
+    });
+    this.add.text(112, 186, stage.presentation.tacticalNote, {
+      fontFamily: FONT_FAMILY,
+      fontSize: "16px",
+      color: "#afc4cf",
+      wordWrap: { width: 360 }
+    });
 
     createStagePreview(this, stage, {
-      x: 720,
-      y: 202,
-      width: 330,
-      height: 196,
+      x: 730,
+      y: 188,
+      width: 300,
+      height: 180,
       backgroundTint: stage.atmosphere.panelTint,
       frameTint: stage.atmosphere.panelStrokeTint,
       accentTint: theme.visuals.endTint,
@@ -67,51 +60,50 @@ export class PreloadScene extends Phaser.Scene {
 
     const createChip = (x: number, y: number, title: string, value: string, tint: number) => {
       this.add
-        .rectangle(x, y, 170, 56, stage.atmosphere.panelTint, 0.98)
+        .rectangle(x, y, 172, 60, 0x061017, 0.86)
         .setOrigin(0, 0)
-        .setStrokeStyle(2, tint, 0.8);
-      this.add
-        .text(x + 14, y + 12, title, {
-          fontFamily: LABEL_FONT_FAMILY,
-          fontSize: "12px",
-          color: "#756c87"
-        })
-        .setOrigin(0, 0);
-      this.add
-        .text(x + 14, y + 30, value, {
-          fontFamily: FONT_FAMILY,
-          fontSize: "15px",
-          color: "#324349"
-        })
-        .setOrigin(0, 0);
+        .setStrokeStyle(1, tint, 0.66);
+      this.add.text(x + 16, y + 12, title, {
+        fontFamily: LABEL_FONT,
+        fontSize: "12px",
+        color: "#7fdfff"
+      });
+      this.add.text(x + 16, y + 32, value, {
+        fontFamily: FONT_FAMILY,
+        fontSize: "15px",
+        color: "#eef7fc"
+      });
     };
 
-    createChip(112, 308, "SECTOR", stage.presentation.sector, stage.atmosphere.panelStrokeTint);
-    createChip(292, 308, "THREAT", stage.presentation.threatLevel, theme.visuals.endTint);
-    createChip(472, 308, "RECOMMEND", stage.presentation.recommendedTowerLabel, theme.visuals.startTint);
+    createChip(112, 306, "SECTOR", stage.presentation.sector, stage.atmosphere.panelStrokeTint);
+    createChip(296, 306, "THREAT", stage.presentation.threatLevel, theme.visuals.endTint);
+    createChip(480, 306, "RECOMMEND", stage.presentation.recommendedTowerLabel, theme.visuals.startTint);
 
-    const progressText = this.add
-      .text(112, 404, "0%", {
-        fontFamily: LABEL_FONT_FAMILY,
-        fontSize: "24px",
-        color: "#324349"
-      })
-      .setOrigin(0, 0.5);
+    const progressText = this.add.text(112, 402, "0%", {
+      fontFamily: LABEL_FONT,
+      fontSize: "24px",
+      color: "#eef7fc"
+    });
+
     this.add
-      .rectangle(112, 446, 516, 20, stage.atmosphere.panelTint, 1)
+      .rectangle(112, 446, 516, 22, 0x041017, 0.96)
       .setOrigin(0, 0.5)
-      .setStrokeStyle(2, stage.atmosphere.panelStrokeTint, 0.82);
+      .setStrokeStyle(1, stage.atmosphere.panelStrokeTint, 0.7);
+    const progressBarGlow = this.add
+      .rectangle(116, 446, 0, 14, theme.visuals.startTint, 0.22)
+      .setOrigin(0, 0.5);
     const progressBar = this.add
-      .rectangle(116, 446, 0, 14, theme.visuals.startTint, 1)
+      .rectangle(116, 446, 0, 10, theme.visuals.startTint, 1)
       .setOrigin(0, 0.5);
 
     this.load.on("progress", (value: number) => {
       progressText.setText(`${Math.round(value * 100)}%`);
       progressBar.width = 508 * value;
+      progressBarGlow.width = 508 * value;
     });
 
     this.load.on("complete", () => {
-      progressText.setText("준비 완료");
+      progressText.setText("링크 완료");
     });
 
     this.load.image(ASSET_KEYS.terrain.grass, theme.assets.terrain.grass);
@@ -141,7 +133,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image(ASSET_KEYS.effects.hit, theme.assets.effects.hit);
     this.load.image(ASSET_KEYS.effects.explosion, theme.assets.effects.explosion);
     this.load.image(ASSET_KEYS.effects.freeze, theme.assets.effects.freeze);
-    this.load.image(ASSET_KEYS.effects.trail, theme.assets.projectiles.frost);
+    this.load.image(ASSET_KEYS.effects.trail, theme.assets.effects.trail);
   }
 
   create() {

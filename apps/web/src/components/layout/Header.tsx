@@ -11,21 +11,21 @@ export const Header = ({ compact = false }: HeaderProps) => {
 
   return (
     <header className={compact ? "topbar topbar--compact" : "topbar"}>
-      <div>
-        <p className="topbar__eyebrow">{compact ? "TACTICAL LINK" : "전술 지원 대시보드"}</p>
-        <h2 className="topbar__title">{compact ? "전장 콘솔" : "타워 디펜스 작전실"}</h2>
+      <div className="topbar__intro">
+        <p className="topbar__eyebrow">{compact ? "TACTICAL CONSOLE" : "TACTICAL COMMAND"}</p>
+        <h2 className="topbar__title">{compact ? "전장 링크" : "타워 디펜스"}</h2>
         {!compact ? (
           <p className="topbar__status">
             {isLoggedIn
-              ? "작전 로비와 랭킹 서비스가 연결되어 있습니다."
-              : "비로그인 모드로 화면을 둘러보는 중입니다."}
+              ? "세션 동기화와 전장 기록 전송이 활성화되었습니다."
+              : "로그인 전 상태입니다. 전장 진입 시 세션 연결이 필요합니다."}
           </p>
         ) : null}
       </div>
 
       <div className="topbar__actions">
         <label className="volume-control">
-          <span>작전 음향</span>
+          <span>전장 음향</span>
           <input
             max={1}
             min={0}
@@ -40,8 +40,8 @@ export const Header = ({ compact = false }: HeaderProps) => {
         {isLoggedIn ? (
           <>
             <div className="profile-chip">
-              <span>{nickname}</span>
-              <small>{compact ? "전술 대기 중" : "실시간 동기화 상태"}</small>
+              <strong>{nickname}</strong>
+              <small>{compact ? "전장 세션 유지 중" : "지휘 세션 활성"}</small>
             </div>
             <button
               className="button button--ghost"

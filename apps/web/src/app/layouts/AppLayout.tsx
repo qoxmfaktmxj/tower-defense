@@ -7,7 +7,7 @@ export const AppLayout = () => {
   const isGameRoute = location.pathname.startsWith("/game");
 
   return (
-    <div className="shell">
+    <div className={isGameRoute ? "shell shell--game" : "shell"}>
       <Sidebar />
       <div className={isGameRoute ? "shell__content shell__content--game" : "shell__content"}>
         <Header compact={isGameRoute} />

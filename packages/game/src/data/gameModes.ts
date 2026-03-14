@@ -102,17 +102,17 @@ export const gameModeDefinitions: Record<GameModeId, GameModeThemeDefinition> = 
       }
     },
     visuals: {
-      backgroundColor: "#f6fffb",
-      grassTint: 0xd7fdec,
-      grassAltTint: 0xb2e4db,
-      roadTint: 0xfbfffd,
-      patchTint: 0xebf7f2,
-      slotAvailableTint: 0xa9fbd7,
-      slotOccupiedTint: 0xb0c6ce,
-      slotSelectedTint: 0x938ba1,
-      slotGlowTint: 0xb2e4db,
-      towerPlateOuter: 0x6b7f86,
-      towerPlateInner: 0x93b7be,
+      backgroundColor: "#081119",
+      grassTint: 0x13252d,
+      grassAltTint: 0x17333d,
+      roadTint: 0x6f8794,
+      patchTint: 0x21343b,
+      slotAvailableTint: 0x1dd7c2,
+      slotOccupiedTint: 0x395260,
+      slotSelectedTint: 0x59e1ff,
+      slotGlowTint: 0x23c5ff,
+      towerPlateOuter: 0x08161c,
+      towerPlateInner: 0x173745,
       towerSelectedTint: 0xffffff,
       towerScales: {
         arrow: 0.9,
@@ -126,17 +126,17 @@ export const gameModeDefinitions: Record<GameModeId, GameModeThemeDefinition> = 
         boss: 0.94
       },
       projectileTints: {
-        arrow: 0xffffff,
-        cannon: 0xffffff,
-        frost: 0xb2e4db
+        arrow: 0x8ff3ff,
+        cannon: 0xffd16f,
+        frost: 0x8bd8ff
       },
-      hitTint: 0xffffff,
-      explosionTint: 0xcabed3,
-      freezeTint: 0xb2e4db,
-      startTint: 0xa9fbd7,
-      endTint: 0x938ba1,
-      propTint: 0xfbfffd,
-      overdriveTint: 0xd7fdec
+      hitTint: 0xbff6ff,
+      explosionTint: 0xffb25d,
+      freezeTint: 0x88dfff,
+      startTint: 0x1dd7c2,
+      endTint: 0xf1c35a,
+      propTint: 0xc9d8df,
+      overdriveTint: 0x7ef8eb
     }
   }
 };

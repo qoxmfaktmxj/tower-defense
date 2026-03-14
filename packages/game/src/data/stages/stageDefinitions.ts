@@ -4,8 +4,7 @@ export const stageDefinitions: Record<StageId, StageDefinition> = {
   "han-river-front": {
     id: "han-river-front",
     name: "한강 방어선",
-    description:
-      "강변 보급로를 따라 적이 길게 밀고 들어옵니다. 긴 직선 구간이 많아 기본 포대 운영이 쉬운 전장입니다.",
+    description: "긴 직선과 완만한 회전이 이어지는 수변 보급로입니다. 기본 포대 효율이 높은 전장입니다.",
     width: 960,
     height: 540,
     initialGold: 260,
@@ -30,7 +29,7 @@ export const stageDefinitions: Record<StageId, StageDefinition> = {
       { id: "A7", x: 810, y: 302 },
       { id: "A8", x: 846, y: 94 }
     ],
-    zones: [{ kind: "sand", x: 830, y: 120, cols: 2, rows: 3, alpha: 0.96 }],
+    zones: [{ kind: "sand", x: 830, y: 120, cols: 2, rows: 3, alpha: 0.68 }],
     props: [
       { kind: "treeLarge", x: 98, y: 74, scale: 1.06, depth: 1.4 },
       { kind: "treeSmall", x: 164, y: 468, scale: 1, angle: 12, depth: 1.4 },
@@ -42,46 +41,45 @@ export const stageDefinitions: Record<StageId, StageDefinition> = {
       { kind: "treeLarge", x: 870, y: 440, scale: 1.08, depth: 1.4 }
     ],
     visuals: {
-      backgroundColor: "#f6fffb",
-      grassTint: 0xd7fdec,
-      grassAltTint: 0xb2e4db,
-      roadTint: 0xfbfffd,
-      patchTint: 0xeef8ef,
-      slotAvailableTint: 0xa9fbd7,
-      slotOccupiedTint: 0xb0c6ce,
-      slotSelectedTint: 0x938ba1,
-      slotGlowTint: 0xb2e4db,
-      propTint: 0xf8fffc,
-      startTint: 0xa9fbd7,
-      endTint: 0x938ba1,
-      overdriveTint: 0xd7fdec
+      backgroundColor: "#07151c",
+      grassTint: 0x0f242d,
+      grassAltTint: 0x14323d,
+      roadTint: 0x768894,
+      patchTint: 0x21353c,
+      slotAvailableTint: 0x1dd7c2,
+      slotOccupiedTint: 0x3b5663,
+      slotSelectedTint: 0x59e1ff,
+      slotGlowTint: 0x2fd6ff,
+      propTint: 0xc8d7de,
+      startTint: 0x1dd7c2,
+      endTint: 0xf1c35a,
+      overdriveTint: 0x7ef8eb
     },
     atmosphere: {
-      glowTint: 0xb2e4db,
-      glowTintAlt: 0xa9fbd7,
-      glowAlpha: 0.16,
-      hazeTint: 0xf4fffb,
-      hazeAlpha: 0.28,
-      pathGuideTint: 0xb0c6ce,
-      pathGuideAlpha: 0.22,
-      panelTint: 0xf8fffc,
-      panelStrokeTint: 0x938ba1
+      glowTint: 0x0dcac6,
+      glowTintAlt: 0x1f5f84,
+      glowAlpha: 0.14,
+      hazeTint: 0x061118,
+      hazeAlpha: 0.42,
+      pathGuideTint: 0x8fe8ff,
+      pathGuideAlpha: 0.18,
+      panelTint: 0x0a141b,
+      panelStrokeTint: 0x2b6675
     },
     presentation: {
-      tagline: "강변 방어선 유지",
-      sector: "한강 북단 제7전력선",
+      tagline: "강변 전력선 유지",
+      sector: "한강 북단 제7방어선",
       threatLevel: "보통",
-      weather: "습기 짙은 강안 지역",
+      weather: "수면 안개와 습기",
       recommendedTower: "arrow",
       recommendedTowerLabel: "기관 포대",
-      tacticalNote: "직선 구간이 길어 기관 포대를 여러 개 겹치면 초반 방어가 안정됩니다."
+      tacticalNote: "직선 구간이 길어 기관 포대 중첩과 중화기 후방 배치가 안정적으로 통합니다."
     }
   },
   "metro-grid": {
     id: "metro-grid",
     name: "메트로 그리드",
-    description:
-      "차가운 도시 전력망을 따라 적이 방향을 자주 바꿉니다. 감속과 교차 화력이 중요한 전장입니다.",
+    description: "도심 전력망 위를 굽이치는 교차 경로입니다. 감속과 교차 사격 효율이 높습니다.",
     width: 960,
     height: 540,
     initialGold: 280,
@@ -108,8 +106,8 @@ export const stageDefinitions: Record<StageId, StageDefinition> = {
       { id: "B9", x: 890, y: 318 }
     ],
     zones: [
-      { kind: "sand", x: 108, y: 410, cols: 2, rows: 2, alpha: 0.92 },
-      { kind: "grassAlt", x: 734, y: 84, cols: 2, rows: 2, alpha: 0.78 }
+      { kind: "sand", x: 108, y: 410, cols: 2, rows: 2, alpha: 0.54 },
+      { kind: "grassAlt", x: 734, y: 84, cols: 2, rows: 2, alpha: 0.42 }
     ],
     props: [
       { kind: "barricade", x: 88, y: 52, scale: 1, depth: 1.5 },
@@ -122,46 +120,45 @@ export const stageDefinitions: Record<StageId, StageDefinition> = {
       { kind: "treeSmall", x: 908, y: 392, scale: 0.92, depth: 1.4 }
     ],
     visuals: {
-      backgroundColor: "#f4fbfd",
-      grassTint: 0xd7f0ec,
-      grassAltTint: 0xb0c6ce,
-      roadTint: 0xfbfeff,
-      patchTint: 0xe5eef1,
-      slotAvailableTint: 0xb2e4db,
-      slotOccupiedTint: 0x938ba1,
-      slotSelectedTint: 0xa9fbd7,
-      slotGlowTint: 0xb0c6ce,
-      propTint: 0xf5fbff,
-      startTint: 0xb2e4db,
-      endTint: 0x938ba1,
-      overdriveTint: 0xd7fdec
+      backgroundColor: "#0a111a",
+      grassTint: 0x14212c,
+      grassAltTint: 0x1c2c39,
+      roadTint: 0x7e8794,
+      patchTint: 0x1d2d37,
+      slotAvailableTint: 0x39d4ff,
+      slotOccupiedTint: 0x3a4d64,
+      slotSelectedTint: 0x84f3ff,
+      slotGlowTint: 0x49d8ff,
+      propTint: 0xc8d4df,
+      startTint: 0x2ad7ff,
+      endTint: 0xff6b61,
+      overdriveTint: 0x7cecff
     },
     atmosphere: {
-      glowTint: 0xb0c6ce,
-      glowTintAlt: 0xb2e4db,
-      glowAlpha: 0.14,
-      hazeTint: 0xf0f5f6,
-      hazeAlpha: 0.32,
-      pathGuideTint: 0x938ba1,
-      pathGuideAlpha: 0.18,
-      panelTint: 0xf7fcfe,
-      panelStrokeTint: 0x938ba1
+      glowTint: 0x1f7fc4,
+      glowTintAlt: 0x2be7ff,
+      glowAlpha: 0.12,
+      hazeTint: 0x060d14,
+      hazeAlpha: 0.44,
+      pathGuideTint: 0xa4e6ff,
+      pathGuideAlpha: 0.16,
+      panelTint: 0x0b121a,
+      panelStrokeTint: 0x2d4f6c
     },
     presentation: {
-      tagline: "도심 전력망 교전",
+      tagline: "도심 전력망 봉쇄",
       sector: "메트로 구역 7 전력선",
       threatLevel: "상",
-      weather: "차가운 도시 조명",
+      weather: "차가운 도심 조명",
       recommendedTower: "frost",
       recommendedTowerLabel: "빙결 포대",
-      tacticalNote:
-        "코너와 교차 구간이 많아 빙결 포대와 중화기 포대를 섞으면 후반 유지력이 좋아집니다."
+      tacticalNote: "교차 구간이 많아 빙결 포대로 적을 묶고 중화기를 뒤에서 받치는 운용이 강합니다."
     }
   },
   "red-canyon": {
     id: "red-canyon",
     name: "레드 캐니언",
-    description: "건조한 협곡 보급로입니다. 후반 중장갑과 보스 압박이 강한 전장입니다.",
+    description: "협곡 벽을 따라 상승과 하강이 반복되는 보급로입니다. 후반 중장갑 압박이 강합니다.",
     width: 960,
     height: 540,
     initialGold: 300,
@@ -191,8 +188,8 @@ export const stageDefinitions: Record<StageId, StageDefinition> = {
       { id: "C10", x: 904, y: 270 }
     ],
     zones: [
-      { kind: "sand", x: 106, y: 92, cols: 3, rows: 2, alpha: 0.94 },
-      { kind: "sand", x: 758, y: 430, cols: 2, rows: 2, alpha: 0.9 }
+      { kind: "sand", x: 106, y: 92, cols: 3, rows: 2, alpha: 0.72 },
+      { kind: "sand", x: 758, y: 430, cols: 2, rows: 2, alpha: 0.62 }
     ],
     props: [
       { kind: "treeSmall", x: 82, y: 260, scale: 0.94, depth: 1.4 },
@@ -205,40 +202,39 @@ export const stageDefinitions: Record<StageId, StageDefinition> = {
       { kind: "treeSmall", x: 896, y: 48, scale: 0.9, depth: 1.4 }
     ],
     visuals: {
-      backgroundColor: "#fbf7fd",
-      grassTint: 0xe8dbef,
-      grassAltTint: 0xd8c9e1,
-      roadTint: 0xfffbff,
-      patchTint: 0xf0e5f5,
-      slotAvailableTint: 0xb2e4db,
-      slotOccupiedTint: 0x938ba1,
-      slotSelectedTint: 0xa9fbd7,
-      slotGlowTint: 0x938ba1,
-      propTint: 0xfdf9ff,
-      startTint: 0xb2e4db,
-      endTint: 0x938ba1,
-      overdriveTint: 0xd7fdec
+      backgroundColor: "#171008",
+      grassTint: 0x302219,
+      grassAltTint: 0x453125,
+      roadTint: 0xa68871,
+      patchTint: 0x55412d,
+      slotAvailableTint: 0xffb45f,
+      slotOccupiedTint: 0x684735,
+      slotSelectedTint: 0xffdf8a,
+      slotGlowTint: 0xff9257,
+      propTint: 0xe5c3a0,
+      startTint: 0xff944f,
+      endTint: 0xff5d4d,
+      overdriveTint: 0xffdd8e
     },
     atmosphere: {
-      glowTint: 0x938ba1,
-      glowTintAlt: 0xb0c6ce,
+      glowTint: 0xdb6638,
+      glowTintAlt: 0x7a341f,
       glowAlpha: 0.16,
-      hazeTint: 0xf8effb,
-      hazeAlpha: 0.34,
-      pathGuideTint: 0xb0c6ce,
-      pathGuideAlpha: 0.2,
-      panelTint: 0xfcf8ff,
-      panelStrokeTint: 0x938ba1
+      hazeTint: 0x120b06,
+      hazeAlpha: 0.48,
+      pathGuideTint: 0xffd38b,
+      pathGuideAlpha: 0.14,
+      panelTint: 0x160f09,
+      panelStrokeTint: 0x7f4d32
     },
     presentation: {
-      tagline: "협곡 보급로 차단",
-      sector: "서부 협곡 수송선",
-      threatLevel: "최상",
-      weather: "모래먼지와 열기",
+      tagline: "협곡 보급선 방어",
+      sector: "서부 협곡 3차 보급선",
+      threatLevel: "상",
+      weather: "고열과 적색 먼지",
       recommendedTower: "cannon",
       recommendedTowerLabel: "중화기 포대",
-      tacticalNote:
-        "후반 중장갑 비중이 높아 중화기 포대를 먼저 준비하고 보스 진입 구간에 화력을 집중해야 합니다."
+      tacticalNote: "중장갑 파고가 길게 이어져 화력 집중이 중요합니다. 빙결 포대는 후방 보조 정도로 운용하십시오."
     }
   }
 };

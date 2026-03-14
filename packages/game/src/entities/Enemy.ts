@@ -48,10 +48,16 @@ export class Enemy {
     this.y = path[0]?.y ?? 0;
 
     this.shadow = scene.add
-      .ellipse(this.x, this.y + definition.radius + 2, definition.radius * 2.2, 11, 0x071014, 0.4)
+      .ellipse(this.x, this.y + definition.radius + 3, definition.radius * 2.4, 12, 0x040b10, 0.44)
       .setDepth(5);
 
-    this.glow = scene.add.circle(0, 2, definition.radius * 0.92, definition.color, 0.14);
+    this.glow = scene.add.circle(
+      0,
+      2,
+      definition.radius * (definition.key === "boss" ? 1.16 : 0.96),
+      definition.color,
+      definition.key === "boss" ? 0.22 : 0.16
+    );
     this.sprite = scene.add
       .image(0, 0, enemySpriteKeys[definition.key])
       .setScale(this.theme.visuals.enemyScales[definition.key])
@@ -59,7 +65,7 @@ export class Enemy {
     this.body = scene.add.container(this.x, this.y, [this.glow, this.sprite]).setDepth(6);
 
     this.hpBarBg = scene.add
-      .rectangle(this.x, this.y - definition.radius - 11, this.hpWidth, 5, 0x081218, 0.92)
+      .rectangle(this.x, this.y - definition.radius - 11, this.hpWidth, 5, 0x081218, 0.96)
       .setDepth(7);
     this.hpBarFill = scene.add
       .rectangle(
@@ -67,7 +73,7 @@ export class Enemy {
         this.y - definition.radius - 11,
         this.hpWidth,
         5,
-        0x82f0af,
+        definition.key === "boss" ? 0xff7a6f : 0x82f0af,
         0.96
       )
       .setOrigin(0, 0.5)
@@ -189,7 +195,8 @@ export class Enemy {
 
   private applyVisualState(now: number) {
     const slowed = this.getSlowRatio(now) < 1;
-    this.glow.setFillStyle(slowed ? 0x94dfff : this.definition.color, slowed ? 0.24 : 0.14);
+    const baseAlpha = this.definition.key === "boss" ? 0.22 : 0.16;
+    this.glow.setFillStyle(slowed ? 0x94dfff : this.definition.color, slowed ? 0.28 : baseAlpha);
     this.sprite.setTint(slowed ? 0xb8ecff : 0xffffff);
   }
 }

@@ -5,13 +5,12 @@ import { SCENE_KEYS } from "../core/constants/sceneKeys";
 import type { GameModeId, StageId } from "../core/types/gameTypes";
 import { defaultGameModeId, getGameModeDefinition } from "../data/gameModes";
 import { defaultStageId, getStageDefinition } from "../data/stages/stageDefinitions";
-import { getWaveDefinitions } from "../data/waves/waveDefinitions";
 import { resolveStageTheme } from "../data/stages/resolveStageTheme";
+import { getWaveDefinitions } from "../data/waves/waveDefinitions";
 import { createStagePreview } from "./helpers/createStagePreview";
 
 const FONT_FAMILY = '"Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
-const LABEL_FONT_FAMILY =
-  '"Kenney Future Narrow", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+const LABEL_FONT = '"Kenney Future Narrow", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
@@ -27,30 +26,44 @@ export class MenuScene extends Phaser.Scene {
     const totalWaves = getWaveDefinitions(stageId).length;
     const backgroundTint = Phaser.Display.Color.HexStringToColor(theme.visuals.backgroundColor).color;
 
-    this.add.rectangle(480, 270, 960, 540, backgroundTint, 0.94);
-    this.add.circle(148, 120, 170, stage.atmosphere.glowTint, stage.atmosphere.glowAlpha);
-    this.add.circle(816, 404, 220, stage.atmosphere.glowTintAlt, stage.atmosphere.glowAlpha * 0.9);
-    this.add.rectangle(480, 270, 960, 540, stage.atmosphere.hazeTint, stage.atmosphere.hazeAlpha);
+    this.add.rectangle(480, 270, 960, 540, backgroundTint, 1);
+    this.add.rectangle(480, 270, 960, 540, 0x02070b, 0.28);
+    this.add.circle(172, 118, 190, stage.atmosphere.glowTint, stage.atmosphere.glowAlpha + 0.04);
+    this.add.circle(804, 410, 220, stage.atmosphere.glowTintAlt, stage.atmosphere.glowAlpha + 0.02);
+    this.add.rectangle(480, 40, 960, 120, 0x02070b, 0.2);
+    this.add.rectangle(480, 500, 960, 120, 0x02070b, 0.24);
 
-    this.add
-      .text(64, 62, "전장 브리핑", {
-        fontFamily: FONT_FAMILY,
-        fontSize: "38px",
-        fontStyle: "700",
-        color: "#324349"
-      })
-      .setDepth(2);
-    this.add.text(64, 110, `${theme.name} 전장 출격 준비`, {
+    const grid = this.add.graphics();
+    grid.lineStyle(1, stage.atmosphere.pathGuideTint, 0.08);
+    for (let x = 0; x <= 960; x += 48) {
+      grid.lineBetween(x, 0, x, 540);
+    }
+    for (let y = 0; y <= 540; y += 48) {
+      grid.lineBetween(0, y, 960, y);
+    }
+
+    this.add.text(64, 58, "PRE-ENGAGEMENT", {
+      fontFamily: LABEL_FONT,
+      fontSize: "14px",
+      color: "#7fdfff"
+    });
+    this.add.text(64, 88, stage.name, {
       fontFamily: FONT_FAMILY,
-      fontSize: "19px",
-      color: "#6f6784"
+      fontSize: "38px",
+      fontStyle: "700",
+      color: "#eef7fc"
+    });
+    this.add.text(64, 132, `${stage.presentation.tagline} · ${stage.presentation.weather}`, {
+      fontFamily: FONT_FAMILY,
+      fontSize: "18px",
+      color: "#9db2bf"
     });
 
     createStagePreview(this, stage, {
       x: 250,
-      y: 286,
-      width: 368,
-      height: 244,
+      y: 292,
+      width: 360,
+      height: 236,
       backgroundTint: stage.atmosphere.panelTint,
       frameTint: stage.atmosphere.panelStrokeTint,
       accentTint: theme.visuals.endTint,
@@ -58,68 +71,48 @@ export class MenuScene extends Phaser.Scene {
     });
 
     this.add
-      .rectangle(682, 260, 402, 268, stage.atmosphere.panelTint, 0.98)
-      .setStrokeStyle(2, stage.atmosphere.panelStrokeTint, 0.82)
-      .setDepth(1);
+      .rectangle(700, 286, 392, 274, stage.atmosphere.panelTint, 0.96)
+      .setStrokeStyle(2, stage.atmosphere.panelStrokeTint, 0.82);
 
-    this.add.text(510, 140, stage.name, {
-      fontFamily: FONT_FAMILY,
-      fontSize: "28px",
-      fontStyle: "700",
-      color: "#324349"
-    });
-    this.add.text(510, 176, `${stage.presentation.tagline} / 위험도 ${stage.presentation.threatLevel}`, {
-      fontFamily: FONT_FAMILY,
-      fontSize: "17px",
-      color: "#6f6784"
+    this.add.text(520, 162, "작전 개요", {
+      fontFamily: LABEL_FONT,
+      fontSize: "12px",
+      color: "#7fdfff"
     });
     this.add.text(
-      510,
-      226,
-      `작전 구역\n${stage.presentation.sector}\n\n기상\n${stage.presentation.weather}\n\n추천 포대\n${stage.presentation.recommendedTowerLabel}\n\n전술 메모\n${stage.presentation.tacticalNote}`,
+      520,
+      188,
+      `${stage.description}\n\n섹터 ${stage.presentation.sector}\n위험도 ${stage.presentation.threatLevel}\n추천 포대 ${stage.presentation.recommendedTowerLabel}\n총 웨이브 ${totalWaves}`,
       {
         fontFamily: FONT_FAMILY,
-        fontSize: "16px",
-        color: "#4f646b",
-        lineSpacing: 8,
-        wordWrap: { width: 340 }
+        fontSize: "18px",
+        color: "#eef7fc",
+        lineSpacing: 10,
+        wordWrap: { width: 328 }
       }
     );
 
     this.add
-      .rectangle(682, 454, 402, 68, stage.atmosphere.panelTint, 0.98)
-      .setStrokeStyle(1, stage.atmosphere.panelStrokeTint, 0.72)
-      .setDepth(1);
-    this.add.text(510, 436, "OBJECTIVE", {
-      fontFamily: LABEL_FONT_FAMILY,
+      .rectangle(700, 454, 392, 70, 0x04090e, 0.82)
+      .setStrokeStyle(1, stage.atmosphere.panelStrokeTint, 0.6);
+    this.add.text(520, 432, "전술 메모", {
+      fontFamily: LABEL_FONT,
       fontSize: "12px",
-      color: "#756c87"
+      color: "#7fdfff"
     });
-    this.add.text(510, 454, `${totalWaves}웨이브를 방어하고 5웨이브마다 등장하는 보스를 저지하십시오.`, {
+    this.add.text(520, 452, stage.presentation.tacticalNote, {
       fontFamily: FONT_FAMILY,
       fontSize: "15px",
-      color: "#324349"
+      color: "#c4d5df",
+      lineSpacing: 6,
+      wordWrap: { width: 330 }
     });
 
-    this.add
-      .rectangle(682, 502, 300, 60, stage.atmosphere.panelTint, 0.98)
-      .setStrokeStyle(2, stage.atmosphere.panelStrokeTint, 0.58)
-      .setDepth(1);
-    this.add
-      .text(682, 490, "하단 제어 영역에서", {
-        fontFamily: FONT_FAMILY,
-        fontSize: "15px",
-        color: "#6f6784"
-      })
-      .setOrigin(0.5);
-    this.add
-      .text(682, 512, "'출격 시작' 버튼을 누르십시오", {
-        fontFamily: FONT_FAMILY,
-        fontSize: "22px",
-        fontStyle: "700",
-        color: "#324349"
-      })
-      .setOrigin(0.5);
+    this.add.text(480, 506, "출격 시작은 React 전술 HUD에서 진행합니다.", {
+      fontFamily: FONT_FAMILY,
+      fontSize: "16px",
+      color: "#9db2bf"
+    }).setOrigin(0.5);
 
     const launchGame = () => {
       this.scene.start(SCENE_KEYS.Game, { autoStart: true });

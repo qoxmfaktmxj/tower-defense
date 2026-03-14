@@ -14,10 +14,10 @@ export const Sidebar = () => {
   return (
     <aside className="sidebar">
       <div className="brand-block">
-        <p className="brand-block__eyebrow">KOR LIVE BUILD</p>
+        <p className="brand-block__eyebrow">TACTICAL DEFENSE GRID</p>
         <h1 className="brand-block__title">타워 디펜스</h1>
         <p className="brand-block__copy">
-          3개 맵과 50웨이브 전장을 지원하는 한국어 기반 브라우저 타워 디펜스 빌드입니다.
+          3개 전장, 50웨이브, 5단 포대 업그레이드를 지원하는 전술 방어 콘솔입니다.
         </p>
       </div>
 
@@ -38,11 +38,11 @@ export const Sidebar = () => {
       </nav>
 
       <div className="sidebar-footer">
-        <strong>{isLoggedIn ? "실시간 전술 연결 중" : "로그인 대기 중"}</strong>
+        <strong>{isLoggedIn ? "링크 상태 양호" : "세션 대기 중"}</strong>
         <span>
           {isLoggedIn
-            ? "작전 데이터와 최근 결과가 동기화된 상태입니다."
-            : "로그인하면 최근 전투 기록과 설정을 이어서 사용할 수 있습니다."}
+            ? "최근 전투 결과와 조작 설정이 현재 세션에 유지됩니다."
+            : "로그인 후 최근 전투 기록과 설정을 이어서 사용할 수 있습니다."}
         </span>
       </div>
     </aside>

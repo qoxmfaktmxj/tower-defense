@@ -14,6 +14,7 @@ import {
   type TowerKind
 } from "@tower-defense/game";
 import { GameViewport } from "../../components/game/GameViewport";
+import { StageRoutePreview } from "../../components/ui/StageRoutePreview";
 import { StatCard } from "../../components/ui/StatCard";
 import { submitGameResult } from "../../lib/api/client";
 import { queryKeys } from "../../lib/query/keys";
@@ -27,7 +28,13 @@ const specialEffectLabels = {
 } as const;
 
 const getReadyFeedback = (stageName: string) =>
-  `${stageName} 준비 완료. 슬롯을 선택한 뒤 화면 안 버튼으로 포대를 배치하세요.`;
+  `${stageName} 전장 링크 완료. 슬롯을 선택한 뒤 하단 액션 바에서 포대를 배치하십시오.`;
+
+const buildCommandCopy: Record<TowerKind, string> = {
+  arrow: "기본 연사 포대",
+  cannon: "범위 화력 포대",
+  frost: "감속 지원 포대"
+};
 
 export const GamePage = () => {
   const navigate = useNavigate();
@@ -59,8 +66,8 @@ export const GamePage = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.rankings.all });
       setFeedback(
         response.accepted
-          ? "전투 결과가 랭킹에 반영되었습니다."
-          : "기록 수치를 검증 중입니다. 랭킹 반영은 잠시 보류됩니다."
+          ? "전투 결과가 랭킹 보드에 반영되었습니다."
+          : "기록 검증 중입니다. 랭킹 반영은 잠시 보류됩니다."
       );
     }
   });
@@ -75,7 +82,8 @@ export const GamePage = () => {
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(document.fullscreenElement === fullscreenTargetRef.current);
+      const target = fullscreenTargetRef.current;
+      setIsFullscreen(document.fullscreenElement === target);
       window.setTimeout(() => {
         fullscreenToggleLockRef.current = false;
       }, 120);
@@ -110,17 +118,17 @@ export const GamePage = () => {
         event.preventDefault();
         if (snapshot?.paused) {
           bridge.resumeGame();
-          setFeedback("전투를 재개했습니다.");
+          setFeedback("전투 재개.");
         } else {
           bridge.pauseGame();
-          setFeedback("전투를 일시 정지했습니다.");
+          setFeedback("전투 일시 정지.");
         }
         return;
       }
 
       if (key === "1" || key === "2") {
         bridge.setGameSpeed(Number(key) as 1 | 2);
-        setFeedback(`${key}배속으로 전환했습니다.`);
+        setFeedback(`${key}배속 전환.`);
         return;
       }
 
@@ -171,6 +179,7 @@ export const GamePage = () => {
       setBridge(null);
       debugAutostartRef.current = false;
       setSelectedStageId(stageId);
+      setFeedback(`${getStageDefinition(stageId).name} 전장 데이터로 전환합니다.`);
     },
     [selectedStageId, setSelectedStageId]
   );
@@ -180,11 +189,7 @@ export const GamePage = () => {
     event?.stopPropagation();
 
     const target = fullscreenTargetRef.current;
-    if (!target) {
-      return;
-    }
-
-    if (fullscreenToggleLockRef.current) {
+    if (!target || fullscreenToggleLockRef.current) {
       return;
     }
 
@@ -203,7 +208,7 @@ export const GamePage = () => {
       await target.requestFullscreen();
     } catch {
       fullscreenToggleLockRef.current = false;
-      setFeedback("전체 화면 전환에 실패했습니다. 브라우저 권한을 확인하세요.");
+      setFeedback("전체 화면 전환 실패. 브라우저 권한을 확인하십시오.");
     }
   }, []);
 
@@ -277,16 +282,18 @@ export const GamePage = () => {
   const currentSpeed = snapshot?.speed ?? 1;
   const selectedTower = selection?.tower;
   const isBridgeReady = bridge !== null;
-  const operationStatus = snapshot?.paused ? "일시 정지" : snapshot?.running ? "교전 중" : "출격 준비";
+  const isRunning = Boolean(snapshot?.running);
+  const isPaused = Boolean(snapshot?.paused);
+  const operationStatus = isPaused ? "정지" : isRunning ? "교전" : "대기";
   const nextWaveSummary = snapshot?.nextWaveSummary ?? "다음 웨이브 대기 중";
 
   const getBuildDisabledReason = (buildCost: number) => {
     if (!selection) {
-      return "포대 슬롯을 먼저 선택하세요.";
+      return "슬롯을 먼저 선택해야 합니다.";
     }
 
     if (selection.tower) {
-      return "이미 포대가 배치된 슬롯입니다.";
+      return "이미 포대가 설치된 슬롯입니다.";
     }
 
     if (currentGold < buildCost) {
@@ -297,78 +304,159 @@ export const GamePage = () => {
   };
 
   const upgradeDisabledReason = !selectedTower
-    ? "업그레이드할 포대를 먼저 선택하세요."
+    ? "업그레이드할 포대를 선택하십시오."
     : selectedTower.isMaxLevel
       ? "이미 최대 레벨입니다."
       : currentGold < (selectedTower.upgradeCost ?? 0)
         ? "골드가 부족합니다."
         : null;
 
-  const selectedTowerSummary = selectedTower
-    ? `${selectedTower.displayName} / Lv.${selectedTower.level}`
+  const selectionTitle = selectedTower
+    ? `${selectedTower.displayName} · Lv.${selectedTower.level}`
     : selection
       ? `${selection.slotId} 빈 슬롯`
       : "선택 없음";
 
-  const selectedTowerDetail = selectedTower
-    ? `업그레이드 ${selectedTower.upgradeCost ? `${formatNumber(selectedTower.upgradeCost)} 골드` : "불가"} / 판매 ${formatNumber(selectedTower.sellValue)} 골드`
-    : "포대를 고르면 배치와 업그레이드를 바로 진행할 수 있습니다.";
+  const selectionSubtitle = selectedTower
+    ? `판매 ${formatNumber(selectedTower.sellValue)}G / 다음 ${selectedTower.upgradeCost ? `${formatNumber(selectedTower.upgradeCost)}G` : "없음"}`
+    : selection
+      ? "여기에 새 포대를 배치할 수 있습니다."
+      : "슬롯이나 포대를 선택하면 세부 정보가 표시됩니다.";
+
+  const handleStart = () => {
+    bridge?.startGame();
+    setFeedback(`${selectedStage.name} 전장 출격 명령 전송.`);
+  };
+
+  const handlePause = () => {
+    bridge?.pauseGame();
+    setFeedback("전투 일시 정지.");
+  };
+
+  const handleResume = () => {
+    bridge?.resumeGame();
+    setFeedback("전투 재개.");
+  };
+
+  const handleSpeed = (speed: 1 | 2) => {
+    bridge?.setGameSpeed(speed);
+    setFeedback(`${speed}배속 전환.`);
+  };
+
+  const handleBuild = (towerType: TowerKind) => {
+    if (!selection) {
+      setFeedback("슬롯을 먼저 선택하십시오.");
+      return;
+    }
+
+    bridge?.buildTower(selection.slotId, towerType);
+    setFeedback(`${buildCommandCopy[towerType]} 배치 명령 전송.`);
+  };
+
+  const handleUpgrade = () => {
+    if (!selection) {
+      setFeedback("업그레이드 대상이 선택되지 않았습니다.");
+      return;
+    }
+
+    bridge?.upgradeTower(selection.slotId);
+    setFeedback("포대 업그레이드 명령 전송.");
+  };
+
+  const handleSell = () => {
+    if (!selection) {
+      setFeedback("판매 대상이 선택되지 않았습니다.");
+      return;
+    }
+
+    bridge?.sellTower(selection.slotId);
+    setFeedback("포대 회수 명령 전송.");
+  };
 
   return (
-    <section className="game-screen game-screen--wide">
-      <div className="page-header game-screen__header">
+    <section className="game-screen">
+      <div className="page-header page-header--game">
         <div>
-          <p className="panel-tag">Tower Defense</p>
-          <h1>타워 디펜스 출격</h1>
+          <p className="panel-tag">TACTICAL DEFENSE</p>
+          <h1>전장 관제</h1>
           <p className="page-header__copy">
-            포대 배치 버튼을 전장 안으로 넣었습니다. 슬롯을 먼저 선택한 뒤 화면 안 하단 바에서
-            바로 배치하고, 선택한 포대는 같은 오버레이에서 업그레이드하거나 판매할 수 있습니다.
+            상단 HUD에서 핵심 전황을 확인하고, 하단 액션 바에서 포대를 배치하십시오. 세부 조작은
+            우측 인스펙터에서 바로 이어집니다.
           </p>
         </div>
-
-        <div className="game-screen__header-meta">
-          <div className="profile-chip">
-            <small>현재 전장</small>
-            <strong>{selectedStage.name}</strong>
-          </div>
-          <div className="profile-chip">
-            <small>작전 상태</small>
-            <strong>{operationStatus}</strong>
-          </div>
+        <div className="status-list status-list--stacked">
+          <span>현재 전장 {selectedStage.name}</span>
+          <span>작전 상태 {operationStatus}</span>
         </div>
       </div>
 
       <div className="game-stage-tabs">
-        {stageCatalog.map((stage) => (
-          <button
-            className={stage.id === selectedStageId ? "game-stage-tab game-stage-tab--active" : "game-stage-tab"}
-            key={stage.id}
-            onClick={() => handleStageSelect(stage.id)}
-            type="button"
-          >
-            <strong>{stage.name}</strong>
-            <small>
-              {stage.threatLevel} / {stage.recommendedTowerLabel}
-            </small>
-          </button>
-        ))}
+        {stageCatalog.map((stage) => {
+          const isActive = stage.id === selectedStageId;
+
+          return (
+            <button
+              className={isActive ? "game-stage-tab game-stage-tab--active" : "game-stage-tab"}
+              key={stage.id}
+              onClick={() => handleStageSelect(stage.id)}
+              type="button"
+            >
+              <StageRoutePreview className="game-stage-tab__preview" stageId={stage.id} />
+              <div className="game-stage-tab__body">
+                <div className="game-stage-tab__header">
+                  <strong>{stage.name}</strong>
+                  <span className="pill">{stage.threatLevel}</span>
+                </div>
+                <div className="status-list">
+                  <span>{stage.recommendedTowerLabel}</span>
+                  <span>{stage.id === selectedStageId ? "선택됨" : "전환"}</span>
+                </div>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
-      <div className="game-screen__body game-screen__body--single">
-        <div className="game-screen__board">
-          <div className="game-hud-strip">
-            <StatCard accent="teal" label="골드" value={formatNumber(displayedGold)}>
-              배치와 업그레이드에 사용
-            </StatCard>
-            <StatCard accent="amber" label="생명" value={formatNumber(displayedLives)}>
-              적이 도달할 때마다 1 감소
-            </StatCard>
-            <StatCard accent="coral" label="웨이브" value={`${currentWave} / ${totalWaves}`}>
-              현재 속도 x{currentSpeed}
-            </StatCard>
-            <StatCard accent="teal" label="점수" value={formatNumber(snapshot?.score ?? 0)}>
-              보상과 웨이브 클리어 점수
-            </StatCard>
+      <div className="combat-grid">
+        <div className="combat-main">
+          <div className="combat-hud">
+            <div className="combat-hud__overview">
+              <div className="combat-hud__identity">
+                <span className="panel-tag">LIVE OPERATION</span>
+                <strong>{selectedStage.name}</strong>
+                <div className="status-list">
+                  <span>{stageDefinition.presentation.sector}</span>
+                  <span>{operationStatus}</span>
+                  <span>속도 x{currentSpeed}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="game-hud-strip">
+              <StatCard accent="amber" label="골드" value={formatNumber(displayedGold)}>
+                포대 설치와 업그레이드에 사용
+              </StatCard>
+              <StatCard accent="coral" label="생명" value={formatNumber(displayedLives)}>
+                적 도달 시 1 감소
+              </StatCard>
+              <StatCard accent="teal" label="웨이브" value={`${currentWave} / ${totalWaves}`}>
+                다음 접적 {nextWaveSummary}
+              </StatCard>
+              <StatCard accent="teal" label="점수" value={formatNumber(snapshot?.score ?? 0)}>
+                현재 잔여 적 {formatNumber(snapshot?.enemiesAlive ?? 0)}기
+              </StatCard>
+            </div>
+          </div>
+
+          <div className="combat-alerts">
+            <div className="system-banner">
+              <span className="system-banner__label">시스템</span>
+              <strong>{feedback}</strong>
+            </div>
+            <div className="system-banner system-banner--secondary">
+              <span className="system-banner__label">단축키</span>
+              <strong>Q/W/E 배치 · U 업그레이드 · S 판매 · Space 정지</strong>
+            </div>
           </div>
 
           <div className="game-viewport-shell">
@@ -384,6 +472,7 @@ export const GamePage = () => {
               viewportRef={fullscreenTargetRef}
             >
               <div className="game-overlay-topbar">
+                <span className="game-overlay-chip">{operationStatus}</span>
                 <button
                   className="game-overlay-fullscreen"
                   onClick={handleToggleFullscreen}
@@ -393,149 +482,100 @@ export const GamePage = () => {
                   }}
                   type="button"
                 >
-                  {isFullscreen ? "전체 화면 종료" : "전체 화면"}
+                  {isFullscreen ? "축소" : "전체"}
                 </button>
               </div>
-              <div className="game-overlay-controls">
-                <div className="game-overlay-panel game-overlay-panel--build">
-                  <div className="game-overlay-panel__header">
-                    <strong>포대 배치</strong>
-                    <span>{selection ? `선택 슬롯 ${selection.slotId}` : "슬롯 선택 필요"}</span>
-                  </div>
-                  <div className="game-overlay-build-list">
-                    {towerCatalog.map((option) => {
-                      const blockedReason = getBuildDisabledReason(option.buildCost);
-
-                      return (
-                        <button
-                          className="game-overlay-button"
-                          disabled={Boolean(blockedReason)}
-                          key={option.key}
-                          onClick={() => selection && bridge?.buildTower(selection.slotId, option.key)}
-                          title={blockedReason ?? `${option.displayName} 배치`}
-                          type="button"
-                        >
-                          <strong>{option.displayName}</strong>
-                          <span>{formatNumber(option.buildCost)} 골드</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+              {!isBridgeReady ? (
+                <div className="game-overlay-loading">
+                  <span className="panel-tag">LINK</span>
+                  <strong>전장 엔진 연결 중</strong>
                 </div>
-
-                <div className="game-overlay-panel game-overlay-panel--selection">
-                  <div className="game-overlay-panel__header">
-                    <strong>{selectedTowerSummary}</strong>
-                    <span>{selection ? selectedStage.tagline : "포대 선택 대기"}</span>
-                  </div>
-                  <p className="game-overlay-panel__copy">{selectedTowerDetail}</p>
-                  {selectedTower?.specialEffect ? (
-                    <p className="game-overlay-panel__copy">
-                      특수 효과: {specialEffectLabels[selectedTower.specialEffect]}
-                    </p>
-                  ) : null}
-                  <div className="game-overlay-utility-actions">
-                    <button
-                      className="game-overlay-button game-overlay-button--utility"
-                      disabled={Boolean(upgradeDisabledReason)}
-                      onClick={() => selection && bridge?.upgradeTower(selection.slotId)}
-                      title={upgradeDisabledReason ?? "포대 업그레이드"}
-                      type="button"
-                    >
-                      업그레이드
-                    </button>
-                    <button
-                      className="game-overlay-button game-overlay-button--utility"
-                      disabled={!selectedTower}
-                      onClick={() => selection && bridge?.sellTower(selection.slotId)}
-                      type="button"
-                    >
-                      판매
-                    </button>
-                  </div>
-                  {upgradeDisabledReason ? (
-                    <p className="game-overlay-panel__hint">{upgradeDisabledReason}</p>
-                  ) : null}
-                </div>
-              </div>
+              ) : null}
             </GameViewport>
           </div>
 
-          <article className="stack-card game-bottom-controls">
-            <div className="stack-card__row">
-              <h3>전투 제어</h3>
-              <span className="pill">{operationStatus}</span>
+          <div className="combat-actionbar">
+            <div className="combat-actionbar__build">
+              {towerCatalog.map((tower) => {
+                const blockedReason = getBuildDisabledReason(tower.buildCost);
+
+                return (
+                  <button
+                    className={
+                      blockedReason ? "tower-action tower-action--disabled" : "tower-action"
+                    }
+                    disabled={Boolean(blockedReason)}
+                    key={tower.key}
+                    onClick={() => handleBuild(tower.key)}
+                    type="button"
+                  >
+                    <div className="tower-action__head">
+                      <strong>{tower.displayName}</strong>
+                      <span className="tower-action__hotkey">{tower.hotkey}</span>
+                    </div>
+                    <div className="tower-action__body">
+                      <span className="tower-action__cost">{formatNumber(tower.buildCost)} G</span>
+                      <span className="tower-action__copy">
+                        {blockedReason ?? buildCommandCopy[tower.key]}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="game-bottom-controls__buttons">
-              <button
-                className="button button--primary"
-                disabled={!isBridgeReady}
-                onClick={() => bridge?.startGame()}
-                type="button"
-              >
+            <div className="combat-actionbar__controls">
+              <button className="button button--primary" disabled={!isBridgeReady} onClick={handleStart} type="button">
                 출격 시작
               </button>
               <button
                 className="button button--ghost"
-                disabled={!isBridgeReady}
-                onClick={() => bridge?.pauseGame()}
+                disabled={!isBridgeReady || !isRunning || isPaused}
+                onClick={handlePause}
                 type="button"
               >
                 일시 정지
               </button>
               <button
                 className="button button--ghost"
-                disabled={!isBridgeReady}
-                onClick={() => bridge?.resumeGame()}
+                disabled={!isBridgeReady || !isPaused}
+                onClick={handleResume}
                 type="button"
               >
                 재개
               </button>
               <button
-                className="button button--ghost"
+                className={currentSpeed === 1 ? "button button--primary" : "button button--ghost"}
                 disabled={!isBridgeReady}
-                onClick={() => bridge?.setGameSpeed(1)}
+                onClick={() => handleSpeed(1)}
                 type="button"
               >
                 1배속
               </button>
               <button
-                className="button button--ghost"
+                className={currentSpeed === 2 ? "button button--primary" : "button button--ghost"}
                 disabled={!isBridgeReady}
-                onClick={() => bridge?.setGameSpeed(2)}
+                onClick={() => handleSpeed(2)}
                 type="button"
               >
                 2배속
               </button>
             </div>
-
-            <div className="status-list status-list--strong game-runtime-panel__grid">
-              <span>현재 맵 {selectedStage.name}</span>
-              <span>다음 웨이브 {nextWaveSummary}</span>
-              <span>잔여 적 {formatNumber(snapshot?.enemiesAlive ?? 0)}기</span>
-              <span>선택 슬롯: {selection ? selection.slotId : "없음"}</span>
-            </div>
-
-            <p className="game-inline-note">
-              단축키: Q/W/E 배치, U 업그레이드, S 판매, Space 일시 정지
-            </p>
-            <p className="muted">{feedback}</p>
-          </article>
+          </div>
 
           {submittedResult ? (
-            <article className="stack-card">
+            <article className="stack-card game-result-card">
               <div className="stack-card__row">
-                <h3>결과 제출</h3>
-                <span className="pill">{submittedResult.accepted ? "정상 기록" : "검증 대기"}</span>
+                <h3>전투 결과 제출</h3>
+                <span className="pill">{submittedResult.accepted ? "반영 완료" : "검증 대기"}</span>
               </div>
               <p>
                 {submittedResult.accepted
-                  ? "랭킹 반영까지 완료되었습니다."
-                  : "수동 검증 대상으로 분류되어 확인을 기다리는 상태입니다."}
+                  ? "기록이 순위표에 반영되었습니다."
+                  : "기록이 검증 대기 상태로 전환되었습니다."}
               </p>
               <div className="hero-card__actions">
-                <button className="button button--primary" onClick={() => bridge?.startGame()} type="button">
+                <button className="button button--primary" onClick={handleStart} type="button">
                   다시 출격
                 </button>
                 <button className="button button--ghost" onClick={() => navigate("/ranking")} type="button">
@@ -548,6 +588,82 @@ export const GamePage = () => {
             </article>
           ) : null}
         </div>
+
+        <aside className="combat-sidebar">
+          <article className="stack-card inspector-card">
+            <div className="stack-card__row">
+              <h3>인스펙터</h3>
+              <span className="pill">{selection ? selection.slotId : "미선택"}</span>
+            </div>
+
+            <div className="inspector-card__summary">
+              <strong>{selectionTitle}</strong>
+              <p>{selectionSubtitle}</p>
+            </div>
+
+            <div className="inspector-metrics">
+              <div>
+                <span>상태</span>
+                <strong>{selectedTower ? "설치 완료" : selection ? "배치 가능" : "대기"}</strong>
+              </div>
+              <div>
+                <span>특수 효과</span>
+                <strong>
+                  {selectedTower?.specialEffect
+                    ? specialEffectLabels[selectedTower.specialEffect]
+                    : "없음"}
+                </strong>
+              </div>
+              <div>
+                <span>추천 포대</span>
+                <strong>{selectedStage.recommendedTowerLabel}</strong>
+              </div>
+              <div>
+                <span>위험도</span>
+                <strong>{selectedStage.threatLevel}</strong>
+              </div>
+            </div>
+
+            <div className="inspector-actions">
+              <button
+                className="button button--primary"
+                disabled={Boolean(upgradeDisabledReason)}
+                onClick={handleUpgrade}
+                type="button"
+              >
+                업그레이드
+              </button>
+              <button
+                className="button button--ghost"
+                disabled={!selectedTower}
+                onClick={handleSell}
+                type="button"
+              >
+                판매
+              </button>
+            </div>
+
+            {upgradeDisabledReason ? (
+              <p className="inspector-panel__reason">{upgradeDisabledReason}</p>
+            ) : null}
+          </article>
+
+          <article className="stack-card inspector-card inspector-card--secondary">
+            <div className="stack-card__row">
+              <h3>작전 정보</h3>
+              <span className="pill">LIVE</span>
+            </div>
+
+            <div className="status-list status-list--stacked">
+              <span>섹터 {selectedStage.sector}</span>
+              <span>기상 {selectedStage.weather}</span>
+              <span>다음 접적 {nextWaveSummary}</span>
+              <span>남은 적 {formatNumber(snapshot?.enemiesAlive ?? 0)}기</span>
+            </div>
+
+            <p className="inspector-panel__copy">{selectedStage.tacticalNote}</p>
+          </article>
+        </aside>
       </div>
     </section>
   );

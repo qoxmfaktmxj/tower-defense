@@ -56,11 +56,14 @@ export const createStagePreview = (
   const padX = offsetX + padding;
   const padY = offsetY + padding;
 
-  graphics.lineStyle(1, options.frameTint, 0.16);
-  for (let x = offsetX + 16; x < options.width / 2; x += 24) {
+  graphics.fillStyle(0x050d13, 0.48);
+  graphics.fillRoundedRect(offsetX + 6, offsetY + 6, options.width - 12, options.height - 12, 18);
+
+  graphics.lineStyle(1, options.frameTint, 0.1);
+  for (let x = offsetX + 16; x < options.width / 2; x += 28) {
     graphics.lineBetween(x, offsetY + 12, x, options.height / 2 - 12);
   }
-  for (let y = offsetY + 12; y < options.height / 2; y += 24) {
+  for (let y = offsetY + 12; y < options.height / 2; y += 28) {
     graphics.lineBetween(offsetX + 12, y, options.width / 2 - 12, y);
   }
 
@@ -68,7 +71,13 @@ export const createStagePreview = (
     normalizePoint(point, minX, minY, scale, padX, padY)
   );
 
-  graphics.lineStyle(16, options.secondaryTint, 0.34);
+  graphics.lineStyle(20, 0x071015, 0.88);
+  graphics.beginPath();
+  graphics.moveTo(mappedPath[0]?.x ?? 0, mappedPath[0]?.y ?? 0);
+  mappedPath.slice(1).forEach((point) => graphics.lineTo(point.x, point.y));
+  graphics.strokePath();
+
+  graphics.lineStyle(15, options.secondaryTint, 0.34);
   graphics.beginPath();
   graphics.moveTo(mappedPath[0]?.x ?? 0, mappedPath[0]?.y ?? 0);
   mappedPath.slice(1).forEach((point) => graphics.lineTo(point.x, point.y));
@@ -80,11 +89,20 @@ export const createStagePreview = (
   mappedPath.slice(1).forEach((point) => graphics.lineTo(point.x, point.y));
   graphics.strokePath();
 
+  mappedPath.forEach((point, index) => {
+    if (index % 2 === 0) {
+      graphics.fillStyle(0xffffff, 0.42);
+      graphics.fillCircle(point.x, point.y, 3);
+    }
+  });
+
   stage.buildSlots.forEach((slot) => {
     const mapped = normalizePoint(slot, minX, minY, scale, padX, padY);
+    graphics.fillStyle(options.accentTint, 0.26);
+    graphics.fillCircle(mapped.x, mapped.y, 9);
     graphics.fillStyle(options.frameTint, 0.95);
     graphics.fillCircle(mapped.x, mapped.y, 4.2);
-    graphics.lineStyle(2, 0xffffff, 0.9);
+    graphics.lineStyle(2, 0xffffff, 0.74);
     graphics.strokeCircle(mapped.x, mapped.y, 7.8);
   });
 
@@ -103,7 +121,7 @@ export const createStagePreview = (
     .text(offsetX + 16, offsetY + 12, stage.presentation.tagline, {
       fontFamily: FONT_FAMILY,
       fontSize: "14px",
-      color: "#324349"
+      color: "#dff4ff"
     })
     .setOrigin(0, 0);
 

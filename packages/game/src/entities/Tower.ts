@@ -70,15 +70,15 @@ export class Tower {
     this.totalSpent = definition.buildCost;
 
     this.shadow = scene.add
-      .ellipse(x, y + 15, 40, 14, 0x071014, 0.42)
+      .ellipse(x, y + 16, 42, 16, 0x040b10, 0.48)
       .setDepth(4);
     this.rangeRing = scene.add
       .circle(x, y, this.currentLevel.range)
-      .setStrokeStyle(2, 0xe6faff, 0.26)
+      .setStrokeStyle(2, 0xb7f2ff, 0.3)
       .setVisible(false)
       .setDepth(3);
     this.aura = scene.add
-      .circle(x, y, 28, definition.color, 0.08)
+      .circle(x, y, 30, definition.color, 0.08)
       .setVisible(false)
       .setDepth(5);
     this.overdriveRing = scene.add
@@ -88,9 +88,9 @@ export class Tower {
       .setDepth(5.5);
 
     const plate = scene.add
-      .circle(0, 2, 18, this.theme.visuals.towerPlateOuter, 0.95)
-      .setStrokeStyle(2, 0x08161b, 0.8);
-    const plateInner = scene.add.circle(0, 2, 12, this.theme.visuals.towerPlateInner, 0.58);
+      .circle(0, 2, 20, this.theme.visuals.towerPlateOuter, 0.96)
+      .setStrokeStyle(2, 0x08161b, 0.82);
+    const plateInner = scene.add.circle(0, 2, 13, this.theme.visuals.towerPlateInner, 0.72);
     this.sprite = scene.add
       .image(0, -4, towerSpriteKeys[this.type])
       .setScale(this.theme.visuals.towerScales[this.type])
@@ -154,10 +154,16 @@ export class Tower {
 
     this.cooldownMs = this.currentLevel.fireRateMs;
     this.aura.setVisible(true);
-    this.aura.setAlpha(this.currentLevel.specialEffect ? 0.28 : 0.22);
+    this.aura.setAlpha(this.currentLevel.specialEffect ? 0.32 : 0.24);
     this.aura.setScale(0.85);
     this.body.setScale(0.96);
     this.onFire?.(this.type, Boolean(this.currentLevel.specialEffect));
+
+    const muzzleFlashColor =
+      this.type === "cannon" ? 0xffcb73 : this.type === "frost" ? 0x93e3ff : 0x9efbff;
+    const muzzleFlash = this.body.scene.add
+      .circle(this.x + Math.cos(angle) * 18, this.y + Math.sin(angle) * 18, this.type === "cannon" ? 8 : 6, muzzleFlashColor, 0.34)
+      .setDepth(7.2);
 
     if (this.currentLevel.specialEffect) {
       this.playOverdrivePulse();
@@ -173,6 +179,14 @@ export class Tower {
         this.aura.setVisible(false);
         this.aura.setScale(1);
       }
+    });
+    this.aura.scene.tweens.add({
+      targets: muzzleFlash,
+      alpha: 0,
+      scaleX: 1.8,
+      scaleY: 1.8,
+      duration: 120,
+      onComplete: () => muzzleFlash.destroy()
     });
     this.body.scene.tweens.add({
       targets: this.body,
@@ -245,6 +259,11 @@ export class Tower {
     const isOverdrive = Boolean(this.currentLevel.specialEffect);
     this.rangeRing.setRadius(this.currentLevel.range);
     this.rangeRing.setVisible(selected);
+    this.rangeRing.setStrokeStyle(
+      2,
+      isOverdrive ? this.theme.visuals.overdriveTint : 0xb7f2ff,
+      selected ? 0.32 : 0
+    );
     this.aura.setVisible(selected);
     this.aura.setAlpha(selected ? 0.18 : 0);
     this.body.setScale(selected ? 1.08 : 1);
